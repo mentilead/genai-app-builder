@@ -1,0 +1,16 @@
+# Django
+DEBUG=True
+SECRETKEY='yoursecretkey'
+
+# Postgres
+PGHOST='yourhostname'
+PGDATABASE='yourdb'
+PGUSER='yourusername'
+PGPASSWORD='yoursecurepassword'
+PGPORT='5432'
+PGCONN_MAX_AGE='30'
+PGSSLMODE='require'
+
+# Redis
+REDISUSER='yourusername'
+REDISPASSWORD='yoursecurepassword'
