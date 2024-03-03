@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% load wagtailcore_tags %}
+
+{% block body_class %}template-dashboard{% endblock %}
+
+{% block content %}
+    {% csrf_token %}
+    <h1>Server Sent Events</h1>
+    <button onclick="startSSE()">Start</button>
+    <button onclick="stopSSE()" disabled>Stop</button>
+    <div id="sse-data"></div>
+{% endblock %}
+{% block extra_body %}
+    <script>
+        let eventSource;
+        const sseData = document.getElementById('sse-data');
+
+        function startSSE() {
+            eventSource = new EventSource('/api/stream/');
+            eventSource.onmessage = event => sseData.innerHTML += event.data + '<br>';
+                document.querySelector('button[onclick="startSSE()"]').disabled = true;
+                document.querySelector('button[onclick="stopSSE()"]').disabled = false;
+            }
+        
+            function stopSSE() {
+                if (eventSource) {
+                    eventSource.close();
+                }
+                document.querySelector('button[onclick="startSSE()"]').disabled = false;
+                document.querySelector('button[onclick="stopSSE()"]').disabled = true;
+            }
+
+    </script>
+{% endblock %}
