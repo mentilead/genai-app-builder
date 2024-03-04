@@ -12,13 +12,27 @@
 
             <div class="intro">{{ page.intro|richtext }}</div>
 
-            <form class="" hx-post="{% pageurl page %}" hx-target="#message">
-                {% csrf_token %}
-                <div style="color: red;">
-                    {{ form.as_div }}
-                </div>
-                <button type="Submit">Submit</button>
-            </form>
+            <div x-data="{ max_tokens: 4096, temperature: 0.5, top_k: 250, top_p: 1  }">
+                <input id="user_max_tokens" name="user_max_tokens" x-model="max_tokens" type="number"
+                       placeholder="4096">
+                <input id="user_temperature" name="user_temperature" x-model="temperature" type="text"
+                       placeholder="0.5">
+                <input id="user_top_k" name="user_top_k" x-model="top_k" type="number" placeholder="250">
+                <input id="user_top_p" name="user_top_p" x-model="top_p" type="number" placeholder="1">
+
+                <form class="" hx-post="{% pageurl page %}" hx-target="#message">
+                    {% csrf_token %}
+                    <div style="color: red;">
+                        {{ form.as_div }}
+                    </div>
+                    <input id="max_tokens" name="max_tokens" type="hidden" x-bind:value="max_tokens"/>
+                    <input id="temperature" name="temperature" type="hidden" x-bind:value="temperature"/>
+                    <input id="top_k" name="top_k" type="hidden" x-bind:value="top_k"/>
+                    <input id="top_p" name="top_p" type="hidden" x-bind:value="top_p"/>
+
+                    <button type="Submit">Submit</button>
+                </form>
+            </div>
             <div id="message"></div>
         </section>
 

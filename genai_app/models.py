@@ -16,6 +16,9 @@ from wagtail.contrib.forms.utils import get_field_clean_name
 
 from genaiappbuilder import settings
 
+from genai.providers.bedrock import BedrockClientManager
+
+
 class Dashboard(Page):
     intro = RichTextField(blank=True)
 
@@ -67,7 +70,7 @@ class CustomFormField(AbstractFormField):
         return get_field_clean_name(self.field_name)
 
 
-class  CustomFormBuilder(FormBuilder):
+class CustomFormBuilder(FormBuilder):
     def get_create_field_function(self, type):
         create_field_function = super().get_create_field_function(type)
 
@@ -118,7 +121,6 @@ class PromptPage(AbstractForm):
     def get_form_fields(self):
         return self.custom_form_fields.all()
 
-
     def render_landing_page(self, request, form_submission=None, *args, **kwargs):
         """
         Renders the landing page.
@@ -131,6 +133,25 @@ class PromptPage(AbstractForm):
         print(self.prompts.raw_data[0]["value"][0]["value"]["prompt_id"])
         print(self.prompts.raw_data[0]["value"][0]["value"]["prompt_text"])
         print(form_submission)
+
+        model_parameters = {'max_tokens_to_sample': int(request.POST["max_tokens"]),
+                            "temperature": float(request.POST["temperature"]),
+                            "top_k": int(request.POST["top_k"]),
+                            "top_p": int(request.POST["top_p"]),
+                            "stop_sequences": ["\n\nHuman"]
+                            }
+
+        prompt = BedrockClientManager.create_prompt(self.prompts.raw_data[0]["value"][0]["value"]["prompt_text"],
+                                                    **form_submission.form_data)
+        client = BedrockClientManager("anthropic.claude-v2:1", model_kwargs=model_parameters)
+
+        response = client.textgen_llm.invoke(input=prompt)
+        print(response)
+        context["runnable_output"] = response
+
+        # for chunk in response:
+        #    print(chunk, end="", flush=True)
+
         return TemplateResponse(
             request, self.get_landing_page_template(request), context
         )
@@ -147,7 +168,7 @@ class CustomForm(AbstractForm):
 
     content_panels = AbstractForm.content_panels + [
         FieldPanel('body', classname="full"),
-        #MultiFieldPanel(FormField.content_panels),
+        # MultiFieldPanel(FormField.content_panels),
     ]
 
     def process_form_submission(self, form):
