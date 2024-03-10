@@ -7,11 +7,13 @@ from wagtail import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
 import debug_toolbar
 
+from core.views import ui_playground_view
 from . import settings
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path('uip/', ui_playground_view, name='ui_playground'),
     # Wagtail
     path("wagtail-admin/", include(wagtailadmin_urls)),
     path('documents/', include(wagtaildocs_urls)),

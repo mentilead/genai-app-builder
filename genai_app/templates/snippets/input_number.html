@@ -1,0 +1,13 @@
+<div x-data="{ min: {{ x_data_min }}, max: {{ x_data_max }} }" class="flex flex-col">
+    <label for="{{ group_id }}" class="block mb-2 text-sm font-medium">{{ label_text }}</label>
+    <input id="{{ group_id }}"
+           name="{{ group_id }}"
+           x-model="{{ x_data_var }}"
+           type="number"
+           :value="{{ x_data_var }}"
+           @input="{{ x_data_var }} = Math.min(Math.max($event.target.value, {{ x_data_min }}), {{ x_data_max }})"
+           class="text-black"
+           min="{{ x_data_min }}" max="{{ x_data_max }}">
+    <input id="{{ group_id }}-range" x-model="{{ x_data_var }}" type="range" tabindex="-1"  min="{{ x_data_min }}" max="{{ x_data_max }}"
+           class="mt-2 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-800">
+</div>

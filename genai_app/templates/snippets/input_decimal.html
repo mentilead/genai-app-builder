@@ -1,0 +1,16 @@
+<div x-data="{ min: {{ x_data_min }}, max: {{ x_data_max }}, {{ x_data_var }}_slider: {{ x_data_var }} * 100 }" class="flex flex-col">
+    <label for="{{ group_id }}" class="block mb-2 text-sm font-medium">{{ label_text }}</label>
+    <input id="{{ group_id }}" name="{{ group_id }}"
+           x-model="{{ x_data_var }}"
+           x-bind:value="{{ x_data_var }}"
+           x-on:input="{{ x_data_var }}_slider = {{ x_data_var }} * 100"
+           @blur="{{ x_data_var }} = Math.min(Math.max(parseFloat({{ x_data_var }}).toFixed({{ x_data_decimals }}), {{ x_data_min }}), {{ x_data_max }})"
+           type="text"
+           class="text-black">
+    <input id="{{ group_id }}-range"
+           x-model="{{ x_data_var }}_slider"
+           x-bind:value="{{ x_data_var }}_slider"
+           x-on:input="{{ x_data_var }}_slider = $event.target.value; {{ x_data_var }} = parseFloat(({{ x_data_var }}_slider / 100).toFixed({{ x_data_decimals }}));"
+           type="range" tabindex="-1" x-bind:min="{{ x_data_min }}" x-bind:max="{{ x_data_max }}*100" 
+           class="mt-2 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-800">
+</div>

@@ -5,15 +5,5 @@
 {% block body_class %}template-dashboard{% endblock %}
 
 {% block content %}
-    <main class="flex">
-
-        <section>
-            <h1>{{ page.title }}</h1>
-            Thanks!
-            {{ runnable_output }}
-
-        </section>
-
-    </main>
-
+    <div class="m-1">{{ runnable_output|safe|linebreaks }}</div>
 {% endblock %}

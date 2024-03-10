@@ -141,6 +141,8 @@ class PromptPage(AbstractForm):
                             "stop_sequences": ["\n\nHuman"]
                             }
 
+        print(model_parameters)
+
         prompt = BedrockClientManager.create_prompt(self.prompts.raw_data[0]["value"][0]["value"]["prompt_text"],
                                                     **form_submission.form_data)
         client = BedrockClientManager("anthropic.claude-v2:1", model_kwargs=model_parameters)

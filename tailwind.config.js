@@ -6,6 +6,7 @@
  */
 
 module.exports = {
+    darkMode: 'class',
     content: [
         /**
          * HTML. Paths to Django template files that will contain Tailwind CSS classes.
@@ -43,7 +44,6 @@ module.exports = {
 
         './node_modules/flowbite/**/*.js'
     ],
-    darkMode: 'media',
     theme: {
         extend: {
             colors: {
