@@ -27,6 +27,14 @@ class Dashboard(Page):
     ]
 
 
+class MentorIndexPage(Page):
+    intro = RichTextField(blank=True)
+
+    content_panels = Page.content_panels + [
+        FieldPanel('intro')
+    ]
+
+
 class ChatPage(Page):
     intro = RichTextField(blank=True)
 
@@ -87,6 +95,8 @@ class CustomFormBuilder(FormBuilder):
 class PromptPage(AbstractForm):
     form_builder = CustomFormBuilder
 
+    intro = RichTextField(blank=True)
+
     body = StreamField([
         ('heading', blocks.CharBlock(form_classname="title")),
         ('paragraph', blocks.RichTextBlock()),
@@ -102,6 +112,7 @@ class PromptPage(AbstractForm):
 
     content_panels = Page.content_panels + [
         FormSubmissionsPanel(),
+        FieldPanel('intro'),
         FieldPanel('body'),
         FieldPanel('prompts'),
         InlinePanel('custom_form_fields', label="Custom form fields"),
