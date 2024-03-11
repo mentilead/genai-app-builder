@@ -1,7 +1,14 @@
+import decimal
 import json
+from datetime import datetime, timezone
+
+
+import boto3
+from boto3.dynamodb.conditions import Key
 
 from django.db import models
 from django.template.response import TemplateResponse
+from django.utils import timezone as django_timezone
 from modelcluster.fields import ParentalKey
 from wagtail.contrib.forms.forms import FormBuilder
 from wagtail.contrib.forms.models import AbstractFormField, AbstractFormSubmission, AbstractEmailForm, AbstractForm
@@ -19,6 +26,13 @@ from genaiappbuilder import settings
 from genai.providers.bedrock import BedrockClientManager
 
 
+class UserMentoring:
+    def __init__(self, create_date, runnable_output, mentor_url):
+        self.create_date = create_date
+        self.runnable_output = runnable_output
+        self.mentor_url = mentor_url
+
+
 class Dashboard(Page):
     intro = RichTextField(blank=True)
 
@@ -26,6 +40,43 @@ class Dashboard(Page):
         FieldPanel('intro')
     ]
 
+    def get_context(self, request, *args, **kwargs):
+        context = super().get_context(request, *args, **kwargs)
+        dynamodb = boto3.resource('dynamodb', region_name='fakeRegion', endpoint_url='http://localhost:4000')
+        table = dynamodb.Table('UserMentoring')
+
+        response = table.query(
+            KeyConditionExpression=Key('user_id').eq(request.user.id),
+            ScanIndexForward=False,  # This parameter makes the sorting in descending order
+            Limit=10  # Limit parameter for paging. Modify limit as per your requirements
+        )
+
+        user_mentoring = []
+        for item in response["Items"]:
+            print(item["create_date"])
+            # Convert integer timestamp to datetime in UTC
+            create_date_utc = datetime.utcfromtimestamp(int(item["create_date"])).replace(tzinfo=timezone.utc)
+
+            # Convert the UTC datetime to the user's timezone
+            create_date_user_tz = create_date_utc.astimezone(django_timezone.get_default_timezone())
+
+            # Format the datetime as a string
+            string_create_date = create_date_user_tz.strftime('%Y-%m-%d %H:%M:%S')
+            document = json.loads(item["document"])
+
+            mentor_url = ""
+            if "page_id" in document:
+                page = Page.objects.get(id=int(document["page_id"]))
+                mentor_url = f"{page.url}?openId={int(item['create_date'])}"
+
+            print(mentor_url)
+            user_mentoring.append(UserMentoring(string_create_date, document["runnable_output"], mentor_url))
+
+        context['user_mentoring'] = user_mentoring
+
+        # add more data to context if needed
+
+        return context
 
 class MentorIndexPage(Page):
     intro = RichTextField(blank=True)
@@ -92,6 +143,15 @@ class CustomFormBuilder(FormBuilder):
         return wrapped_create_field_function
 
 
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            if o % 1 > 0:
+                return float(o)
+            else:
+                return int(o)
+        return super(DecimalEncoder, self).default(o)
+
 class PromptPage(AbstractForm):
     form_builder = CustomFormBuilder
 
@@ -132,6 +192,31 @@ class PromptPage(AbstractForm):
     def get_form_fields(self):
         return self.custom_form_fields.all()
 
+    def get_form(self, *args, **kwargs):
+        form = super().get_form(*args, **kwargs)
+        open_id = self.request.GET.get('openId')
+        if open_id:
+            print(open_id)
+            dynamodb = boto3.resource('dynamodb', region_name='fakeRegion', endpoint_url='http://localhost:4000')
+            table = dynamodb.Table('UserMentoring')
+            response = table.get_item(
+                Key={
+                    'user_id': self.request.user.id,
+                    'create_date': int(open_id)
+                }
+            )
+            document = json.loads(response['Item']["document"])
+
+            print(document["form_data"])
+            form.initial = document["form_data"]
+
+        return form
+
+    # Override the serve method
+    def serve(self, request, *args, **kwargs):
+        self.request = request
+        return super().serve(request, *args, **kwargs)
+
     def render_landing_page(self, request, form_submission=None, *args, **kwargs):
         """
         Renders the landing page.
@@ -161,6 +246,41 @@ class PromptPage(AbstractForm):
         response = client.textgen_llm.invoke(input=prompt)
         print(response)
         context["runnable_output"] = response
+
+        import boto3
+        import time
+        import json
+
+        # Get user_id from request
+        user_id = request.user.id
+
+        # Get current UTC time in seconds since 1970
+        create_date = int(time.time())
+
+        # Let's consider this as your JSON document to be saved in DynamoDB
+        mentoring_data = {
+            'page_id': self.id,
+            'model_parameters': model_parameters,
+            'form_data': form_submission.form_data,
+            'runnable_output': response
+        }
+
+        # Convert your data into JSON string
+        mentoring_data_json = json.dumps(mentoring_data, cls=DecimalEncoder)
+
+        dynamodb = boto3.resource('dynamodb', region_name='fakeRegion', endpoint_url='http://localhost:4000')
+        table = dynamodb.Table('UserMentoring')
+        print(f"PageID: {self.id}")
+        response = table.put_item(
+            Item={
+                'user_id': user_id,  # Converting user_id to String as DynamoDB requires it in String format
+                'create_date': create_date,
+                'document': mentoring_data_json
+            }
+        )
+
+        # Rest of your code...
+
 
         # for chunk in response:
         #    print(chunk, end="", flush=True)

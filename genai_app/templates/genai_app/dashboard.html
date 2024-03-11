@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% load wagtailcore_tags %}
-
+{% load tz %}
 {% block body_class %}template-dashboard{% endblock %}
 
 {% block content %}
@@ -11,6 +11,16 @@
             <h1>{{ page.title }}</h1>
 
             <div class="intro">{{ page.intro|richtext }}</div>
+            
+            {% for item in user_mentoring %}
+                <a href="{{ item.mentor_url }}">
+                    <div>
+                        {{ item.create_date }}
+                        {{ item.runnable_output|richtext }}
+                    </div>
+                </a>
+            {% endfor %}
+            
         </section>
 
     </main>
