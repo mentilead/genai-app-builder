@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
+from wagtail_transfer import urls as wagtailtransfer_urls
 import debug_toolbar
 
 from core.views import ui_playground_view
@@ -16,6 +17,7 @@ urlpatterns = [
     path('uip/', ui_playground_view, name='ui_playground'),
     path('core/', include('core.urls')),
     # Wagtail
+    path('wagtail-transfer/', include(wagtailtransfer_urls)),
     path("wagtail-admin/", include(wagtailadmin_urls)),
     path('documents/', include(wagtaildocs_urls)),
     path('', include(wagtail_urls), name='dashboard'),

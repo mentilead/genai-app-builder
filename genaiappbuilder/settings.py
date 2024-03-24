@@ -37,7 +37,7 @@ DEBUG = env('DEBUG')
 SECRET_KEY = env('SECRETKEY')
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "wagtail.search",
     "wagtail.admin",
     "wagtail",
+    "wagtail_transfer",
     # django core apps
     "django.contrib.admin",
     "django.contrib.auth",
@@ -190,7 +191,14 @@ STATICFILES_FINDERS = (
 # wagtail
 WAGTAIL_SITE_NAME = 'My Example Site'
 WAGTAILADMIN_BASE_URL = 'http://127.0.0.1'
+WAGTAILTRANSFER_SOURCES = {
+    'remotedev': {
+        'BASE_URL': 'http://3.70.177.68:8000/wagtail-transfer/',
+        'SECRET_KEY': env('REMOTEDEV_WAGTAIL_SECRET_KEY'),
+    },
+}
 
+WAGTAILTRANSFER_SECRET_KEY = env('LOCAL_WAGTAIL_SECRET_KEY')
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
