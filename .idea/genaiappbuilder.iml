@@ -24,7 +24,6 @@
     <option name="TEMPLATE_FOLDERS">
       <list>
         <option value="$MODULE_DIR$/templates" />
-        <option value="$MODULE_DIR$/genai_app/templates" />
         <option value="$MODULE_DIR$/core/templates" />
       </list>
     </option>

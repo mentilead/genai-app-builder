@@ -69,7 +69,6 @@ INSTALLED_APPS = [
     "wagtail.search",
     "wagtail.admin",
     "wagtail",
-    "wagtail_transfer",
     # django core apps
     "django.contrib.admin",
     "django.contrib.auth",
@@ -222,3 +221,4 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 
 AUTH_USER_MODEL = 'auth.User'
+AWS_REGION=env('AWS_REGION')
