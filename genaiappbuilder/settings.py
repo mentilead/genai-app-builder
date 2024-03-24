@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "analytical",
     "tailwind",
     "django_browser_reload",
+    "tinymce",
     # wagtail apps
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",

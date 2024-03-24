@@ -32,6 +32,7 @@
     <script src="//unpkg.com/alpinejs" defer></script>
     <!-- htmx js -->
     <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/multi-swap.js"></script>
 
     {% compress css %}
         <link rel="stylesheet" href="{% static 'src/output.css' %}">
@@ -45,7 +46,7 @@
     {% analytical_head_bottom %}
 </head>
 
-<body class="leading-normal tracking-normal {% block body_class %}{% endblock %}">
+<body class="leading-normal tracking-normal {% block body_class %}{% endblock %} bg-primary-50 dark:bg-primary-950" hx-boost="true" hx-ext="multi-swap">
 {% analytical_body_top %}
 {% block body %}
     {% if messages %}

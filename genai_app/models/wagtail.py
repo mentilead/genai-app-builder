@@ -1,22 +1,22 @@
 import decimal
 import json
+import time
 from datetime import datetime, timezone
 
-
-import boto3
-from boto3.dynamodb.conditions import Key
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.db import models
+from django.shortcuts import render
 from django.template.response import TemplateResponse
 from django.utils import timezone as django_timezone
 from modelcluster.fields import ParentalKey
 from wagtail.contrib.forms.forms import FormBuilder
-from wagtail.contrib.forms.models import AbstractFormField, AbstractFormSubmission, AbstractEmailForm, AbstractForm
+from wagtail.contrib.forms.models import AbstractFormField, AbstractFormSubmission, AbstractForm
 from wagtail.contrib.forms.panels import FormSubmissionsPanel
 
 from wagtail.models import Page
 from wagtail.fields import RichTextField, StreamField
-from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
+from wagtail.admin.panels import FieldPanel, InlinePanel
 from wagtail import blocks
 from wagtail.images.blocks import ImageChooserBlock
 from wagtail.contrib.forms.utils import get_field_clean_name
@@ -24,16 +24,17 @@ from wagtail.contrib.forms.utils import get_field_clean_name
 from genaiappbuilder import settings
 
 from genai.providers.bedrock import BedrockClientManager
+from .dynamodb import MentorSessionDDB, MentorSessionHistoryDDB
 
 
-class UserMentoring:
+class MentorSession:
     def __init__(self, create_date, runnable_output, mentor_url):
         self.create_date = create_date
         self.runnable_output = runnable_output
         self.mentor_url = mentor_url
 
 
-class Dashboard(Page):
+class Dashboard(Page, LoginRequiredMixin):
     intro = RichTextField(blank=True)
 
     content_panels = Page.content_panels + [
@@ -42,41 +43,53 @@ class Dashboard(Page):
 
     def get_context(self, request, *args, **kwargs):
         context = super().get_context(request, *args, **kwargs)
-        dynamodb = boto3.resource('dynamodb', region_name='fakeRegion', endpoint_url='http://localhost:4000')
-        table = dynamodb.Table('UserMentoring')
 
-        response = table.query(
-            KeyConditionExpression=Key('user_id').eq(request.user.id),
-            ScanIndexForward=False,  # This parameter makes the sorting in descending order
-            Limit=10  # Limit parameter for paging. Modify limit as per your requirements
-        )
+        exclusive_start_key_create_date = request.GET.get("exclusive_start_key")
+        if exclusive_start_key_create_date is not None and exclusive_start_key_create_date != "null":
+            exclusive_start_key = {
+                "create_date": int(exclusive_start_key_create_date),
+                "user_id": request.user.id
+            }
+            context['previous_evaluated_key'] = exclusive_start_key_create_date
+        else:
+            exclusive_start_key = None
 
-        user_mentoring = []
+        mentor_session_ddb = MentorSessionDDB()
+        response = mentor_session_ddb.query_with_paging(request.user.id, 10, exclusive_start_key)
+
+        mentor_session = []
         for item in response["Items"]:
-            print(item["create_date"])
-            # Convert integer timestamp to datetime in UTC
-            create_date_utc = datetime.utcfromtimestamp(int(item["create_date"])).replace(tzinfo=timezone.utc)
-
-            # Convert the UTC datetime to the user's timezone
-            create_date_user_tz = create_date_utc.astimezone(django_timezone.get_default_timezone())
-
-            # Format the datetime as a string
-            string_create_date = create_date_user_tz.strftime('%Y-%m-%d %H:%M:%S')
-            document = json.loads(item["document"])
+            mentoring_data = json.loads(item["mentoring_data"])
 
             mentor_url = ""
-            if "page_id" in document:
-                page = Page.objects.get(id=int(document["page_id"]))
+            if "page_id" in mentoring_data:
+                page = Page.objects.get(id=int(mentoring_data["page_id"]))
                 mentor_url = f"{page.url}?openId={int(item['create_date'])}"
 
-            print(mentor_url)
-            user_mentoring.append(UserMentoring(string_create_date, document["runnable_output"], mentor_url))
+            mentor_session.append(MentorSession(int(item["create_date"]), mentoring_data["runnable_output"], mentor_url))
 
-        context['user_mentoring'] = user_mentoring
+        context['mentor_session'] = mentor_session
+        last_evaluated_key = response.get("LastEvaluatedKey")
+        if last_evaluated_key:
+            del response["LastEvaluatedKey"]["user_id"]
+            context['last_evaluated_key'] = last_evaluated_key["create_date"]
 
         # add more data to context if needed
 
         return context
+
+    def serve(self, request, *args, **kwargs):
+        context = self.get_context(request, *args, **kwargs)
+        response = super().serve(request, *args, **kwargs)
+        previous_evaluated_key = context.get("previous_evaluated_key")
+        if previous_evaluated_key:
+            response["X-Previous-Evaluated-Key"] = previous_evaluated_key
+        last_evaluated_key = context.get("last_evaluated_key")
+        if last_evaluated_key:
+            response["X-Last-Evaluated-Key"] = last_evaluated_key
+
+        return response
+
 
 class MentorIndexPage(Page):
     intro = RichTextField(blank=True)
@@ -152,6 +165,7 @@ class DecimalEncoder(json.JSONEncoder):
                 return int(o)
         return super(DecimalEncoder, self).default(o)
 
+
 class PromptPage(AbstractForm):
     form_builder = CustomFormBuilder
 
@@ -178,6 +192,8 @@ class PromptPage(AbstractForm):
         InlinePanel('custom_form_fields', label="Custom form fields"),
     ]
 
+    runnable_output = ""
+
     def get_submission_class(self):
         return CustomFormSubmission
 
@@ -196,40 +212,55 @@ class PromptPage(AbstractForm):
         form = super().get_form(*args, **kwargs)
         open_id = self.request.GET.get('openId')
         if open_id:
-            print(open_id)
-            dynamodb = boto3.resource('dynamodb', region_name='fakeRegion', endpoint_url='http://localhost:4000')
-            table = dynamodb.Table('UserMentoring')
-            response = table.get_item(
-                Key={
-                    'user_id': self.request.user.id,
-                    'create_date': int(open_id)
-                }
-            )
-            document = json.loads(response['Item']["document"])
+            history_id = self.request.GET.get('historyId')
+            if history_id:
+                mentor_session_history_ddb = MentorSessionHistoryDDB()
+                response = mentor_session_history_ddb.get_item(
+                    {
+                        'mentor_session_id': f"{self.request.user.id}-{open_id}",
+                        'history_date': int(history_id)
+                    }
+                )
+            else:
+                mentor_session_ddb = MentorSessionDDB()
+                response = mentor_session_ddb.get_item(
+                    {
+                        'user_id': self.request.user.id,
+                        'create_date': int(open_id)
+                    }
+                )
+            mentoring_data = json.loads(response["mentoring_data"])
 
-            print(document["form_data"])
-            form.initial = document["form_data"]
+            self.runnable_output = mentoring_data["runnable_output"]
+            form.initial = mentoring_data["form_data"]
 
         return form
+
+    def get_context(self, request, *args, **kwargs):
+        context = super().get_context(request, *args, **kwargs)
+        context["runnable_output"] = self.runnable_output
+        return context
+
+    def history_view(self, request):
+        history = None
+        open_id = request.GET.get("openId")
+        if open_id:
+            history = self.get_mentor_session_history(request.user.id, open_id)
+        # Render template
+        return render(request, 'genai_app/mentor_session_history.html', {'history': history})
 
     # Override the serve method
     def serve(self, request, *args, **kwargs):
         self.request = request
-        return super().serve(request, *args, **kwargs)
+        view = request.GET.get("view")
+        if view is not None and view == 'history_view':
+            return self.history_view(request)
+        else:
+            return super().serve(request, *args, **kwargs)
 
     def render_landing_page(self, request, form_submission=None, *args, **kwargs):
-        """
-        Renders the landing page.
-
-        You can override this method to return a different HttpResponse as
-        landing page. E.g. you could return a redirect to a separate page.
-        """
         context = self.get_context(request)
         context["form_submission"] = form_submission
-        print(self.prompts.raw_data[0]["value"][0]["value"]["prompt_id"])
-        print(self.prompts.raw_data[0]["value"][0]["value"]["prompt_text"])
-        print(form_submission)
-
         model_parameters = {'max_tokens_to_sample': int(request.POST["max_tokens"]),
                             "temperature": float(request.POST["temperature"]),
                             "top_k": int(request.POST["top_k"]),
@@ -237,85 +268,57 @@ class PromptPage(AbstractForm):
                             "stop_sequences": ["\n\nHuman"]
                             }
 
-        print(model_parameters)
 
         prompt = BedrockClientManager.create_prompt(self.prompts.raw_data[0]["value"][0]["value"]["prompt_text"],
                                                     **form_submission.form_data)
         client = BedrockClientManager("anthropic.claude-v2:1", model_kwargs=model_parameters)
 
         response = client.textgen_llm.invoke(input=prompt)
-        print(response)
         context["runnable_output"] = response
 
-        import boto3
-        import time
-        import json
-
-        # Get user_id from request
-        user_id = request.user.id
-
-        # Get current UTC time in seconds since 1970
-        create_date = int(time.time())
-
-        # Let's consider this as your JSON document to be saved in DynamoDB
         mentoring_data = {
             'page_id': self.id,
             'model_parameters': model_parameters,
             'form_data': form_submission.form_data,
             'runnable_output': response
         }
-
-        # Convert your data into JSON string
         mentoring_data_json = json.dumps(mentoring_data, cls=DecimalEncoder)
 
-        dynamodb = boto3.resource('dynamodb', region_name='fakeRegion', endpoint_url='http://localhost:4000')
-        table = dynamodb.Table('UserMentoring')
-        print(f"PageID: {self.id}")
-        response = table.put_item(
-            Item={
-                'user_id': user_id,  # Converting user_id to String as DynamoDB requires it in String format
-                'create_date': create_date,
-                'document': mentoring_data_json
-            }
-        )
+        mentor_session_ddb = MentorSessionDDB()
 
-        # Rest of your code...
+        # Get user_id from request
+        user_id = request.user.id
 
+        # Check if we already have a mentor_session running
+        session_create_date_string = request.POST.get('session_create_date')
+        if session_create_date_string is not None and session_create_date_string != "null":
+            create_date = int(session_create_date_string)
+            mentor_session_ddb.update(user_id, create_date, mentoring_data_json)
+        else:
+            # Get current UTC time in seconds since 1970
+            create_date = int(time.time())
+            mentor_session_ddb.insert(user_id, create_date, mentoring_data_json)
 
-        # for chunk in response:
-        #    print(chunk, end="", flush=True)
+        context["history"] = self.get_mentor_session_history(user_id, create_date)
 
-        return TemplateResponse(
+        response = TemplateResponse(
             request, self.get_landing_page_template(request), context
         )
+        response["X-Session-Create-Day"] = create_date
+        return response
 
+    def get_mentor_session_history(self, user_id, create_date):
+        # Get latest history
+        mentor_session_id = f"{user_id}-{create_date}"
+        mentor_session_history_ddb = MentorSessionHistoryDDB()
+        history_ddb = mentor_session_history_ddb.query_with_paging(mentor_session_id, 10, None)
+        history = []
+        for item in history_ddb["Items"]:
+            history_mentoring_data = json.loads(item["mentoring_data"])
+            history.append({"create_date": create_date, "history_date": item["history_date"],
+                            "runnable_output": history_mentoring_data["runnable_output"],
+                            "mentor_url": f"{self.url}?openId={create_date}&historyId={item['history_date']}"})
+        return history
 
 class CustomFormSubmission(AbstractFormSubmission):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-
-
-class CustomForm(AbstractForm):
-    template = 'forms/custom_form_page.html'
-
-    body = RichTextField(blank=True)
-
-    content_panels = AbstractForm.content_panels + [
-        FieldPanel('body', classname="full"),
-        # MultiFieldPanel(FormField.content_panels),
-    ]
-
-    def process_form_submission(self, form):
-        # You can add your own logic here to process the form data
-        # This method is called when a form is submitted
-        pass
-
-    def serve_post(self, request, *args, **kwargs):
-        form = self.get_form(request.POST, page=self, user=request.user)
-
-        if form.is_valid():
-            # Perform your custom saving action here.
-            # You can omit calling `process_form_submission` if you want to skip storing in AbstractFormSubmission.
-            self.process_form_submission(form)
-            return self.render_landing_page(request, form=form, reset=True)
-
-        return self.render(request, self.get_context(request, form=form))

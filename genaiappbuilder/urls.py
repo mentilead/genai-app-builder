@@ -14,10 +14,11 @@ from . import settings
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('uip/', ui_playground_view, name='ui_playground'),
+    path('core/', include('core.urls')),
     # Wagtail
     path("wagtail-admin/", include(wagtailadmin_urls)),
     path('documents/', include(wagtaildocs_urls)),
-    path('', include(wagtail_urls)),
+    path('', include(wagtail_urls), name='dashboard'),
 
 ]
 

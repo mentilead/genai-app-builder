@@ -5,30 +5,45 @@
 {% block body_class %}template-dashboard{% endblock %}
 
 {% block content %}
-    <div x-data="{ 'showModal': false, max_tokens: 4096, temperature: 0, top_k: 250, top_p: 1 }"
-         @keydown.escape="showModal = false"
-            class="bg-gray-200 dark:bg-gray-900">
+    <div x-data="{ 'showLLMConfig': false, 'showHistory': false, max_tokens: 4096, temperature: 0, top_k: 250, top_p: 1 }"
+         @keydown.escape="showLLMConfig = false; showHistory = false"
+         class="bg-gray-200 dark:bg-gray-900">
         <nav class="bg-white border-gray-200 dark:bg-gray-900">
             <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-                <button type="button" @click="showModal = true" class="format lg:format-lg dark:format-invert">Configurations</button>
-                <button id="theme-toggle" type="button" class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
-                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
-                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                <button type="button" @click="showLLMConfig = true" class="format lg:format-lg dark:format-invert">
+                    Configurations
+                </button>
+                <button id="theme-toggle" type="button"
+                        class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
+                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                              fill-rule="evenodd" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+                <button type="button" @click="showHistory = true" class="format lg:format-lg dark:format-invert">
+                    History
                 </button>
             </div>
         </nav>
         <main class="">
             <section>
-
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="col-span-2 max-w-full m-4">
-                <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">{{ page.title }}</span>
-                </h1>
-                        <form class="flex flex-col flex-grow space-y-4 format lg:format-lg dark:format-invert" hx-post="{% pageurl page %}" hx-target="#message" hx-indicator="#spinner">
+                <div class="grid md:grid-cols-5 grid-cols-1 gap-4">
+                    <div class="border border-yellow-300 md:col-span-3 md:row-start-1 row-start-2 col-span-1 max-w-full m-4">
+                        <form class="flex flex-col flex-grow space-y-4"
+                              hx-post="{% pageurl page %}"
+                              hx-swap="multi:#mentor_response,#mentor_session_history"
+                              hx-indicator="#spinner"
+                              hx-on:htmx:after-request='sessionCreateDate = event.detail.xhr.getResponseHeader("X-Session-Create-Day")'
+                              hx-vals='js:{"session_create_date": sessionCreateDate}'>
                             {% for field in form %}
-                                <h3><label for="{{ field.auto_id }}">{{ field.label }}</label></h3>
-                                {% render_field field class="text-black" %}
+                                <h3><label for="{{ field.auto_id }}"
+                                           class="format lg:format-lg dark:format-invert">{{ field.label }}</label></h3>
+                                {% render_field field class="text-black w-full border border-yellow-300" %}
                                 {% if field.errors %}
                                     <ul class="mt-2 text-sm text-red-600">
                                         {% for error in field.errors %}
@@ -43,31 +58,51 @@
                             <input id="top_k" name="top_k" type="hidden" x-bind:value="top_k"/>
                             <input id="top_p" name="top_p" type="hidden" x-bind:value="top_p"/>
 
-                            <button class="max-w-xs text-white bg-primary-700  hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800"" type="Submit">Submit</button>
+                            <button class="max-w-xs text-white bg-primary-700  hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800"
+                                    type="Submit">Submit
+                            </button>
                         </form>
-                        <div id="message" class="max-w-full format lg:format-lg dark:format-invert min-h-screen mt-4 border border-gray-500 bg-white">
-                            <div class="m-1">Output will appear here...</div>
-                            <div role="status" id="spinner" class="htmx-indicator">
-                                <svg aria-hidden="true" class="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
-                                    <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
-                                </svg>
-                                <span class="sr-only">Generating...</span>
+                        <div id="mentor_response" class="mt-4">
+                                {% if runnable_output %}
+                                    <textarea id="mentor_response_textarea">{{ runnable_output }}</textarea>
+                                {% else %}
+                                    <div class="m-1">Output will appear here...</div>
+                                {% endif %}
+                                <div role="status" id="spinner" class="htmx-indicator">
+                                    <svg aria-hidden="true"
+                                         class="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+                                         viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                              fill="currentColor"/>
+                                        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                              fill="currentFill"/>
+                                    </svg>
+                                    <span class="sr-only">Generating...</span>
+                                </div>
                             </div>
-                        </div>
                     </div>
-                    <div class="col-span-1 m-4 format lg:format-lg dark:format-invert">
+                    <div class="border border-yellow-300 md:col-span-2 col-span-1 m-4 format lg:format-lg dark:format-invert">
                         {{ page.body }}
+                    </div>
+                </div>
+                <div x-show="showHistory"
+                     class="fixed inset-0 z-30 flex items-center justify-center bg-opacity-50 text-sm text-left bg-gray-700 text-black">
+                    <div class="w-4/5 h-4/5 overflow-auto p-4 rounded-lg bg-white">
+                        <div id="mentor_session_history" class="flex flex-col space-y-1 w-full"
+                             hx-get="{{ request.get_full_path }}&view=history_view" hx-trigger="load"
+                             @click.away="showHistory = false">
+                            <span>No History</span>
+                        </div>
                     </div>
                 </div>
             </section>
             <div
                     class="fixed inset-0 z-30 flex items-center justify-center overflow-auto bg-opacity-50"
-                    x-show="showModal"
+                    x-show="showLLMConfig"
             >
                 <div
                         class="format lg:format-lg dark:format-invert max-w-3xl px-6 py-4 mx-auto text-left rounded shadow-lg bg-gray-900 dark:bg-gray-800"
-                        @click.away="showModal = false"
+                        @click.away="showLLMConfig = false"
                         x-transition:enter="motion-safe:ease-out duration-300"
                         x-transition:enter-start="opacity-0 scale-90"
                         x-transition:enter-end="opacity-100 scale-100"
@@ -75,7 +110,7 @@
                     <div class="flex items-center justify-between dark:bg-gray-700 p-2 rounded">
                         <h5 class="mr-3 max-w-none">Configurations</h5>
 
-                        <button type="button" class="z-50 cursor-pointer" @click="showModal = false">
+                        <button type="button" class="z-50 cursor-pointer" @click="showLLMConfig = false">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                  fill="none" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -98,6 +133,7 @@
     </div>
 {% endblock %}
 {% block extra_head %}
+    <script src="https://cdn.tiny.cloud/1/xqzuw51h7wtlq0f4xstyjzz6hkdh5gsmeiwlw4bxdx4aluuw/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     <script>
         // On page load or when changing themes, best to add inline in `head` to avoid FOUC
         if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -112,10 +148,38 @@
 {% endblock %}
 {% block extra_body %}
     <script>
+        htmx.onLoad(function (elt) {
+            tinymce.init({
+                selector: '#mentor_response_textarea',  
+                setup: function (editor) {
+                    editor.on('SaveContent', function (event) {
+                        fetch('/your-endpoint-url', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                content: event.content,
+                            }),
+                        }).then(response => response.json())
+                         .then(data => console.log(data))
+                         .catch((error) => {
+                            console.error('Error:', error);
+                         });
+                    });
+                },
+            });
+        });
+
+        let sessionCreateDate = null;
+        {% if request.GET.openId %}
+            // if we open an existing mentor session then we need to make sure we update that specific session with new runnable_output if needed
+            sessionCreateDate = "{{ request.GET.openId }}";
+        {% endif %}
+
         var themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
         var themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
 
-        // Change the icons inside the button based on previous settings
         if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             themeToggleLightIcon.classList.remove('hidden');
         } else {
@@ -124,7 +188,7 @@
 
         var themeToggleBtn = document.getElementById('theme-toggle');
 
-        themeToggleBtn.addEventListener('click', function() {
+        themeToggleBtn.addEventListener('click', function () {
 
             // toggle icons inside button
             themeToggleDarkIcon.classList.toggle('hidden');
@@ -142,7 +206,7 @@
                     localStorage.setItem('color-theme', 'light');
                 }
 
-            // if NOT set via local storage previously
+                // if NOT set via local storage previously
             } else {
                 if (document.documentElement.classList.contains('dark')) {
                     document.documentElement.classList.remove('dark');

@@ -1,0 +1,24 @@
+<form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    {% for form in formset %}
+        <div class="llmconfig">
+            {{ form.id }}
+            <div class="provider_name">
+                <label for="{{ form.provider_name.id_for_label }}">Provider Name:</label>
+                <span>{{ form.instance.provider_name }}</span>
+            </div>
+            <div class="api_key">
+                <label for="{{ form.api_key.id_for_label }}">API Key:</label>
+                {{ form.api_key }}
+            </div>
+            {% if form.provider_name.value in providers_with_secret_key %}
+            <div class="secret_key">
+                <label for="{{ form.secret_key.id_for_label }}">Secret Key:</label>
+                {{ form.secret_key }}
+            </div>
+            {% endif %}
+        </div>
+    {% endfor %}
+    <input type="submit" value="Save">
+</form>
