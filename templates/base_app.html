@@ -1,13 +1,13 @@
 {% extends "base.html" %}
-
+{% load wagtailcore_tags %}
 {% block content %}
 
     <div class="flex h-screen">
         <!-- Sidebar / Navigation -->
-        <div class="w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 bg-white dark:bg-[#202939] border-r border-primary-500 ">
-            <nav class="flex flex-col">
-                <div>menu 1</div>
-                <div>menu 2</div>
+        <div class="w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 bg-light-bg-secondary dark:bg-dark-bg-secondary border-r border-light-border-primary dark:border-dark-border-primary">
+            <nav class="flex flex-col text-light-text-primary dark:text-dark-text-primary">
+                <a href="{% slugurl 'home' %}">Home</a>
+                <a href="{% slugurl 'mentors' %}">Mentors</a>
             </nav>
         </div>
 

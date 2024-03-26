@@ -1,39 +1,44 @@
-{% extends "base.html" %}
+{% extends "base_app.html" %}
 
 {% load wagtailcore_tags %}
 {% load widget_tweaks %}
 {% block body_class %}template-blogindexpage{% endblock %}
 
-{% block content %}
-    <main class="w-screen bg-gray-200 dark:bg-gray-900 h-screen">
-        <section class=" p-3 sm:p-5 w-full">
-            <div class="max-w-screen-xl px-4 lg:px-12">
-                <h1 class="mb-4 text-2xl font-extrabold leading-none tracking-tight md:text-5xl lg:text-6xl text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
-                    {{ page.title }}
-                </h1>
-                <div class="overflow-x-auto">
-                    <table class="text-sm text-left bg-gray-200 text-gray-500 dark:text-gray-400">
-                        <tbody>
-                        {% for mentor in page.get_children %}
-                            <tr class="border-b dark:border-gray-400 border-gray-800 hover:bg-primary-100">
-                                    <td class="px-2 py-1 text-gray-900 dark:text-white">SVG ICON</td>
-                                    <td class="px-2 py-1">
-                                <a href="{% pageurl mentor %}" class="link no-underline">
-                                        <div class="overflow-hidden overflow-ellipsis min-h-20 max-h-20">
-                                            <article>
-                                                <span class="text-lg font-bold format lg:format-lg dark:format-invert">{{ mentor.title }}</span>
-                                                <span class="whitespace-normal">{{ mentor.specific.intro|richtext }}</span>
-                                            </article>
-                                        </div>
-                                </a>
-                                    </td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+{% block app_content %}
+    <main class="w-full flex flex-col md:ml-64">
+        <div class="h-16 bg-light-bg-secondary dark:bg-dark-bg-secondary p-4 fixed top-0 w-full z-10">
+            <nav class="flex items-center justify-between flex-wrap">
+                <div class="flex items-center flex-shrink-0 mr-6">
+                    <span class="font-bold text-xl leading-normal text-light-text-primary dark:text-dark-text-primary">{{ page.title }}</span>
                 </div>
-            </div>
-        </section>
+            </nav>
+        </div>
+
+        <div class="h-screen flex flex-col mt-16 overflow-hidden">
+            <span class="px-4 mt-4 font-semibold text-base text-light-text-secondary dark:text-dark-text-secondary leading-normal">{{ page.intro|richtext }}</span>
+            <section class="py-1 px-2 bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg m-4 overflow-y-auto flex-grow min-w-[960px] max-w-[960px]">
+                <div id="mentor_list">
+                    {% for mentor in page.get_children %}
+                        <div class="flex m-2 text-sm leading-4 text-light-text-primary dark:text-dark-text-primary border border-light-border-primary dark:border-dark-border-primary">
+                            <div class="min-w-[128px] max-w-[128px] min-h-24 max-h-24 py-1.5 px-3 rounded-l-lg">
+                                SVG ICON
+                            </div>
+                            <div class="border-l border-light-border-primary dark:border-dark-border-primary w-full min-h-24 max-h-24 py-1.5 px-3 overflow-hidden whitespace-no-wrap text-overflow ellipsis">
+                                <a href="{% pageurl mentor %}" class="link no-underline">
+                                    <div class="overflow-hidden overflow-ellipsis">
+                                        <article class="text-light-text-primary dark:text-dark-text-primary space-x-1">
+                                            <span class="text-base font-bold">{{ mentor.title }}</span>
+                                            <span class="whitespace-normal text-sm">{{ mentor.specific.intro|richtext }}</span>
+                                        </article>
+                                    </div>
+                                </a>
+                            </div>
+
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
 
     </main>
 {% endblock %}

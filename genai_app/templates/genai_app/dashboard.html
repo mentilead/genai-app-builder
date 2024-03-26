@@ -6,35 +6,33 @@
 
 {% block app_content %}
     <main class="w-full flex flex-col md:ml-64">
-        <div class="h-16 bg-white dark:bg-[#202939] p-4 fixed top-0 w-full z-10">
+        <div class="h-16 bg-light-bg-secondary dark:bg-dark-bg-secondary p-4 fixed top-0 w-full z-10">
             <nav class="flex items-center justify-between flex-wrap">
                 <div class="flex items-center flex-shrink-0 mr-6">
-                    <span class="font-bold text-xl leading-normal">{{ page.title }}</span>
+                    <span class="font-bold text-xl leading-normal text-light-text-primary dark:text-dark-text-primary">{{ page.title }}</span>
                 </div>
             </nav>
         </div>
-
         <div class="h-screen flex flex-col mt-16 overflow-hidden">
-            <span class="px-4 mt-4 font-semibold text-base text-[#394150] dark:text-[#97A3B6] leading-normal">{{ page.intro|richtext }}</span>
-            <section class="py-1 px-2 bg-white dark:bg-[#202939] rounded-lg m-4 overflow-y-auto flex-grow">
-
-                <div id="mentor_session min-w-[752px] max-w-[752px] border border-yellow-300">
-                    <div class="flex text-sm leading-4 text-[#394150] dark:text-[#d2d5da]">
+            <span class="px-4 mt-4 font-semibold text-base text-light-text-secondary dark:text-dark-text-secondary leading-normal">{{ page.intro|richtext }}</span>
+            <section class="shadow-xl py-1 px-2 bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg m-4 overflow-y-auto flex-grow min-w-[780px] max-w-[780px]">
+                <div id="mentor_session">
+                    <div class="flex text-sm leading-4 text-light-text-primary dark:text-dark-text-primary">
                         <div class="min-w-[128px] max-w-[128px] max-h-8 py-1.5 px-3">Created</div>
                         <div class="min-w-[480px] max-w-[480px] max-h-8 py-1.5 px-3"></div>
                         <div class="min-w-[96px] max-w-[96px] max-h-8 py-1.5 px-3">Mentor</div>
                         <div class="min-w-[48px] max-w-[48px] max-h-8 py-1.5 px-3"></div>
                     </div>
                     {% for item in mentor_session %}
-                        <div class="flex m-2 text-sm leading-4 text-[#394150] dark:text-[#d2d5da] border border-[#cdcfd1] dark:border-gray-700">
+                        <div class="flex m-2 text-sm leading-4 text-light-text-primary dark:text-dark-text-primary border border-light-border-primary dark:border-dark-border-primary">
                             <div class="min-w-[128px] max-w-[128px] min-h-16 max-h-16 py-1.5 px-3 rounded-l-lg"
                                  x-data
                                  x-init="setTimeout(() => $refs.span.innerText = new Date({{ item.create_date }} * 1000).toLocaleString())">
                                 <span x-ref="span"></span>
                             </div>
-                            <div class="border-l border-[#cdcfd1] dark:border-gray-700 min-w-[480px] max-w-[480px] min-h-16 max-h-16 py-1.5 px-3 overflow-hidden whitespace-no-wrap text-overflow ellipsis">{{ item.runnable_output|safe }}</div>
-                            <div class="border-l border-[#cdcfd1] dark:border-gray-700 min-w-[96px] max-w-[96px] min-h-16 max-h-16 py-1.5 px-3">{{ item.page_title }}</div>
-                            <div class="border-l border-[#cdcfd1] dark:border-gray-700 min-w-[48px] max-w-[48px] min-h-16 max-h-16 py-1.5 px-3 rounded-r-lg">
+                            <div class="border-l border-light-border-primary dark:border-dark-border-primary min-w-[480px] max-w-[480px] min-h-16 max-h-16 py-1.5 px-3 overflow-hidden whitespace-no-wrap text-overflow ellipsis">{{ item.runnable_output|safe }}</div>
+                            <div class="border-l border-light-border-primary dark:border-dark-border-primary min-w-[96px] max-w-[96px] min-h-16 max-h-16 py-1.5 px-3">{{ item.page_title }}</div>
+                            <div class="border-l border-light-border-primary dark:border-dark-border-primary min-w-[48px] max-w-[48px] min-h-16 max-h-16 py-1.5 px-3 rounded-r-lg">
                                 <a href="{{ item.mentor_url }}"
                                    class="no-underline">Edit</a></div>
                         </div>
