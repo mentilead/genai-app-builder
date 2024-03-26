@@ -28,9 +28,10 @@ from .dynamodb import MentorSessionDDB, MentorSessionHistoryDDB
 
 
 class MentorSession:
-    def __init__(self, create_date, runnable_output, mentor_url):
+    def __init__(self, create_date, runnable_output, page_title, mentor_url):
         self.create_date = create_date
         self.runnable_output = runnable_output
+        self.page_title = page_title
         self.mentor_url = mentor_url
 
 
@@ -55,18 +56,20 @@ class Dashboard(Page, LoginRequiredMixin):
             exclusive_start_key = None
 
         mentor_session_ddb = MentorSessionDDB()
-        response = mentor_session_ddb.query_with_paging(request.user.id, 10, exclusive_start_key)
+        response = mentor_session_ddb.query_with_paging(request.user.id, 20, exclusive_start_key)
 
         mentor_session = []
         for item in response["Items"]:
             mentoring_data = json.loads(item["mentoring_data"])
 
             mentor_url = ""
+            page_title = ""
             if "page_id" in mentoring_data:
                 page = Page.objects.get(id=int(mentoring_data["page_id"]))
                 mentor_url = f"{page.url}?openId={int(item['create_date'])}"
+                page_title = page.title
 
-            mentor_session.append(MentorSession(int(item["create_date"]), mentoring_data["runnable_output"], mentor_url))
+            mentor_session.append(MentorSession(int(item["create_date"]), mentoring_data["runnable_output"], page_title, mentor_url))
 
         context['mentor_session'] = mentor_session
         last_evaluated_key = response.get("LastEvaluatedKey")
@@ -239,6 +242,9 @@ class PromptPage(AbstractForm):
     def get_context(self, request, *args, **kwargs):
         context = super().get_context(request, *args, **kwargs)
         context["runnable_output"] = self.runnable_output
+        open_id = request.GET.get("openId")
+        if open_id:
+            context["open_id"] = open_id
         return context
 
     def history_view(self, request):
@@ -290,8 +296,8 @@ class PromptPage(AbstractForm):
         user_id = request.user.id
 
         # Check if we already have a mentor_session running
-        session_create_date_string = request.POST.get('session_create_date')
-        if session_create_date_string is not None and session_create_date_string != "null":
+        session_create_date_string = request.GET.get('openId')
+        if session_create_date_string is not None and session_create_date_string != "":
             create_date = int(session_create_date_string)
             mentor_session_ddb.update(user_id, create_date, mentoring_data_json)
         else:
@@ -300,11 +306,10 @@ class PromptPage(AbstractForm):
             mentor_session_ddb.insert(user_id, create_date, mentoring_data_json)
 
         context["history"] = self.get_mentor_session_history(user_id, create_date)
-
+        context["open_id"] = create_date
         response = TemplateResponse(
             request, self.get_landing_page_template(request), context
         )
-        response["X-Session-Create-Day"] = create_date
         return response
 
     def get_mentor_session_history(self, user_id, create_date):

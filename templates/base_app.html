@@ -1,10 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-</body>
-</html>
+{% block content %}
+
+    <div class="flex h-screen">
+        <!-- Sidebar / Navigation -->
+        <div class="w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 bg-white dark:bg-[#202939] border-r border-primary-500 ">
+            <nav class="flex flex-col">
+                <div>menu 1</div>
+                <div>menu 2</div>
+            </nav>
+        </div>
+
+        {% block app_content %}{% endblock %}
+    </div>
+
+{% endblock %}
