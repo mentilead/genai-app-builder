@@ -1,0 +1,19 @@
+{% for item in api_keys %}
+    <div class="flex text-sm leading-4 text-light-text-primary dark:text-dark-text-primary bg-light-bg-primary dark:bg-dark-bg-primary border-t border-light-border-primary dark:border-dark-border-primary">
+        <div class="min-w-[200px] max-w-[128px] py-1.5 px-3">
+            {{ item.api_key_name }}
+        </div>
+        <div class="min-w-[128px] max-w-[128px] py-1.5 px-3 overflow-hidden whitespace-no-wrap text-overflow ellipsis">
+            {% with api_key=item.api_key %}
+                {% with api_key|length as total_len %}
+                    {% with total_len|add:"-4" as secret_middle %}
+                        {{ api_key|slice:":4" }}...{{ api_key|slice:"-4:" }}
+                    {% endwith %}
+                {% endwith %}
+            {% endwith %}
+        </div>
+        <div class="min-w-[96px] max-w-[128px] py-1.5 px-3">
+            {{ item.create_date|date:"d F Y" }}
+        </div>
+    </div>
+{% endfor %}

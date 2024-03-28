@@ -1,5 +1,5 @@
 <textarea id="mentor_response_textarea"
-          class="w-full md:h-full min-h-64 text-light-text-primary dark:text-dark-text-primary bg-light-bg-primary dark:bg-dark-bg-primary"
+          class="w-full md:h-full min-h-64 text-light-text-primary dark:text-dark-text-primary bg-light-bg-primary dark:bg-dark-bg-primary focus:ring-primary-500 focus:border-primary-500"
           x-data="{open_id: {{ open_id }} }"
           hx-trigger="htmx:afterOnLoad" x-effect="let form = document.getElementById('input_form');
                                                 let currentAction = form.getAttribute('hx-post');

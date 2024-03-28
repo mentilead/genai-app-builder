@@ -1,0 +1,106 @@
+{% extends "base_app.html" %}
+{% load widget_tweaks %}
+
+{% block extra_head %}
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+{% endblock %}
+{% block app_content %}
+    <main id="main_element" class="w-full flex flex-col"
+          @dialog-loaded.window="alert('hello');"
+          x-data="{ 'openModal': $store.dialog.openModal }"
+          @keydown.escape="Alpine.store('dialog').hide()">
+        <div class="h-16 bg-light-bg-secondary dark:bg-dark-bg-secondary p-4 fixed top-0 w-full z-10">
+            <nav class="flex items-center justify-between flex-wrap">
+                <div class="flex items-center flex-shrink-0 mr-6">
+                    <span class="font-bold text-xl leading-normal text-light-text-primary dark:text-dark-text-primary">API Keys</span>
+                </div>
+                <button @click="open = !open" class="md:hidden">
+                    <!-- Menu icon goes here -->
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+                              d="M5 7h14M5 12h14M5 17h14"/>
+                    </svg>
+                </button>
+            </nav>
+        </div>
+        <div class="h-screen flex flex-col mt-16">
+            <span class="px-4 mt-4 font-semibold text-base text-light-text-secondary dark:text-dark-text-secondary leading-normal">List of API Keys</span>
+            <section
+                    class="shadow-xl py-1 px-2 bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg m-4 min-w-[600px] max-w-[600px]">
+
+                <div class="px-2 flex text-sm leading-4 text-light-text-primary dark:text-dark-text-primary">
+                    <div class="min-w-[200px] max-w-[128px] max-h-8 py-1.5 px-5">Name</div>
+                    <div class="min-w-[128px] max-w-[480px] max-h-8 py-1.5 px-5">Secret Key</div>
+                    <div class="min-w-[96px] max-w-[96px] max-h-8 py-1.5 px-5">Created</div>
+                </div>
+                <div id="item-list" hx-trigger="load, apiKeysListChanged from:body"
+                     hx-get="{% url 'core:api_keys_list' %}" hx-target="#item-list"
+                     class="flex flex-col space-y-0 px-4 py-2">
+                </div>
+            </section>
+            <button type="button" hx-get="{% url 'core:api_keys_add' %}" hx-target="#dialog"
+                    class="ml-4 w-[16rem] text-sm leading-4 py-1.5 px-3 text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+                Register new GenAI provider
+            </button>
+        </div>
+
+        <!-- Modal -->
+        <div x-cloak x-show="$store.dialog.openModal"
+             class="fixed z-10 inset-0 overflow-y-auto"
+             aria-labelledby="modal-title"
+             role="dialog"
+             aria-modal="true">
+            <div class="flex min-h-screen pt-4 px-4 pb-20 items-center justify-center">
+                <!-- modal overlay -->
+                <div class="fixed inset-0 bg-gray-950 bg-opacity-75 transition-opacity"
+                     @click="Alpine.store('dialog').hide()"></div>
+                <div id="dialog" hx-target="this"></div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', (event) => {
+                htmx.on("htmx:afterSwap", (e) => {
+                    // Response targeting #dialog => show the modal
+                    if (e.detail.target.id == "dialog") {
+                       Alpine.store('dialog').show();
+                    }
+                })
+
+                htmx.on("htmx:beforeSwap", (e) => {
+                    // Empty response targeting #dialog => hide the modal
+                    if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
+                        Alpine.store('dialog').hide();
+                    }
+                })
+
+                // Remove dialog content after hiding
+                htmx.on("hidden.bs.modal", () => {
+                    document.getElementById("dialog").innerHTML = ""
+                })
+            });
+        </script>
+
+    </main>
+{% endblock %}
+{% block extra_body %}
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('dialog', {
+                openModal: false,
+                show: function() {
+                    this.openModal = true;
+                },
+                hide: function() {
+                    this.openModal = false;
+                },
+            });
+        })
+    </script>
+
+{% endblock %}

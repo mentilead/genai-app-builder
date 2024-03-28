@@ -1,6 +1,6 @@
-<div id="mentor_session_history" class="flex flex-col space-y-1 w-full">
+<div id="mentor_session_history" class="flex flex-col w-full">
     {% for item in history %}
-            <a href="{{ item.mentor_url }}" class="no-underline m-2 text-sm leading-4 text-light-text-primary dark:text-dark-text-primary bg-light-bg-primary dark:bg-dark-bg-primary border border-light-border-primary dark:border-dark-border-primary">
+            <a href="{{ item.mentor_url }}" class="no-underline text-sm leading-4 text-light-text-primary dark:text-dark-text-primary bg-light-bg-primary dark:bg-dark-bg-primary border-t border-light-border-primary dark:border-dark-border-primary">
                 <div class="flex flex-col py-1.5 px-3 text-sm">
                     <span x-text="new Date({{ item.history_date }} * 1000).toLocaleString()"></span>
                     <span class="min-h-16 max-h-16 overflow-hidden whitespace-no-wrap text-overflow ellipsis">{{ item.runnable_output|safe }}</span>

@@ -31,18 +31,20 @@ class UserProfile(models.Model):
     role = models.CharField(max_length=6, choices=USER_TYPE_CHOICES)
 
 
-class LLMConfig(models.Model):
+class LLMAPIKey(models.Model):
     PROVIDER_CHOICES = [
         ('open_ai', 'OpenAI'),
         ('aws_bedrock', 'AWS Bedrock'),
         # add more providers here
     ]
 
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    api_key_name = models.CharField(max_length=255, null=False, blank=False)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     provider_name = models.CharField(max_length=255, choices=PROVIDER_CHOICES)
     api_key = models.CharField(max_length=255, null=False, blank=False)
     secret_key = models.CharField(max_length=255, null=True, blank=True)
+    create_date = models.DateTimeField(auto_now_add=True)
+
 
     def __str__(self):
         return self.provider_name

@@ -1,41 +1,55 @@
-{% extends "base.html" %}
+{% extends "base_app.html" %}
 {% load widget_tweaks %}
 
-{% block content %}
-    <div class="">
-        <div class="border-b border-primary-500 p-4">
+{% block app_content %}
+    <main class="w-full flex flex-col">
+        <div class="h-16 bg-light-bg-secondary dark:bg-dark-bg-secondary p-4 fixed top-0 w-full z-10">
             <nav class="flex items-center justify-between flex-wrap">
                 <div class="flex items-center flex-shrink-0 mr-6">
-                    <span class="font-bold text-xl leading-normal">Organization</span>
+                    <span class="font-bold text-xl leading-normal text-light-text-primary dark:text-dark-text-primary">Organization</span>
                 </div>
+                <button @click="open = !open" class="md:hidden">
+                    <!-- Menu icon goes here -->
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+                              d="M5 7h14M5 12h14M5 17h14"/>
+                    </svg>
+
+                </button>
+
             </nav>
         </div>
-        <section class="p-4">
-            <span class="mb-3 font-semibold text-base leading-normal">Details</span>
-            <form method="post" class="flex flex-col space-y-4 mt-3">
-                <div class="flex flex-col space-y-1">
-                    <label class="font-medium text-sm leading-5"
-                           for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
-                    {% if form.name.help_text %}
-                        <span class="text-xs leading-4 mt-1">{{ form.name.help_text }}</span>
-                    {% endif %}
-                    {% render_field form.name size="50" maxlength="50" class="block w-[24rem] text-sm leading-4 py-1.5 px-3 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" %}
-                    {% for error in form.name.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
+        <div class="h-screen flex flex-col mt-16">
+            <span class="px-4 mt-4 font-semibold text-base text-light-text-secondary dark:text-dark-text-secondary leading-normal">Details</span>
 
-                <div class="flex flex-col space-y-1">
-                    <label class="font-medium text-sm leading-5">Organization ID</label>
-                    <span class="text-xs leading-4 mt-1">Identifier for this organization</span>
-                    <span class="block w-[24rem] text-sm leading-4 py-1.5 px-3 text-gray-900 border border-gray-300 rounded-lg bg-gray-200 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">{{ organization.api_id }}</span>
-                </div>
-                <button type="button"
-                        class="w-[4rem] text-sm leading-4 py-1.5 px-3 text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-                    Save
-                </button>
-                {% csrf_token %}
-            </form>
-        </section>
-    </div>
+            <section
+                    class="w-[400px] shadow-xl py-1 px-2 bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg m-4">
+                <form method="post" class="flex flex-col space-y-4 mt-3 mb-3">
+                    <div class="flex flex-col space-y-1">
+                        <label class="font-medium text-sm leading-5"
+                               for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+                        {% if form.name.help_text %}
+                            <span class="text-xs leading-4 mt-1">{{ form.name.help_text }}</span>
+                        {% endif %}
+                        {% render_field form.name size="50" maxlength="50" class="block w-[24rem] text-sm leading-4 py-1.5 px-3 text-light-text-primary dark:text-dark-text-primary bg-light-bg-primary dark:bg-dark-bg-primary focus:ring-primary-500 focus:border-primary-500" %}
+                        {% for error in form.name.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div class="flex flex-col space-y-1">
+                        <label class="font-medium text-sm leading-5">Organization ID</label>
+                        <span class="text-xs leading-4 mt-1">Identifier for this organization</span>
+                        <span class="block w-[24rem] text-sm leading-4 py-1.5 px-3 text-light-text-primary dark:text-dark-text-primary bg-light-bg-primary dark:bg-dark-bg-primary border border-light-border-primary dark:border-dark-border-primary">{{ organization.api_id }}</span>
+                    </div>
+                    <button type="button"
+                            class="w-[4rem] text-sm leading-4 py-1.5 px-3 text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+                        Save
+                    </button>
+                    {% csrf_token %}
+                </form>
+            </section>
+        </div>
+    </main>
 {% endblock %}

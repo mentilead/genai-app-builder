@@ -222,3 +222,8 @@ SESSION_CACHE_ALIAS = "default"
 
 AUTH_USER_MODEL = 'auth.User'
 AWS_REGION=env('AWS_REGION')
+
+INTERNAL_IPS = [
+    '109.58.234.109'
+]
+

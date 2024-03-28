@@ -5,25 +5,34 @@
 {% block body_class %}template-blogindexpage{% endblock %}
 
 {% block app_content %}
-    <main class="w-full flex flex-col md:ml-64">
+    <main class="w-full flex flex-col">
         <div class="h-16 bg-light-bg-secondary dark:bg-dark-bg-secondary p-4 fixed top-0 w-full z-10">
             <nav class="flex items-center justify-between flex-wrap">
                 <div class="flex items-center flex-shrink-0 mr-6">
                     <span class="font-bold text-xl leading-normal text-light-text-primary dark:text-dark-text-primary">{{ page.title }}</span>
                 </div>
+                <button @click="open = !open" class="md:hidden">
+                    <!-- Menu icon goes here -->
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+                              d="M5 7h14M5 12h14M5 17h14"/>
+                    </svg>
+                </button>
             </nav>
         </div>
 
         <div class="h-screen flex flex-col mt-16 overflow-hidden">
             <span class="px-4 mt-4 font-semibold text-base text-light-text-secondary dark:text-dark-text-secondary leading-normal">{{ page.intro|richtext }}</span>
-            <section class="py-1 px-2 bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg m-4 overflow-y-auto flex-grow min-w-[960px] max-w-[960px]">
+            <section
+                    class="py-1 px-2 bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg m-4 overflow-y-auto">
                 <div id="mentor_list">
                     {% for mentor in page.get_children %}
-                        <div class="flex m-2 text-sm leading-4 text-light-text-primary dark:text-dark-text-primary bg-light-bg-primary dark:bg-dark-bg-primary border border-light-border-primary dark:border-dark-border-primary">
-                            <div class="min-w-[128px] max-w-[128px] min-h-24 max-h-24 py-1.5 px-3 rounded-l-lg">
+                        <div class="flex m-2 text-sm leading-4 text-light-text-primary dark:text-dark-text-primary bg-light-bg-primary dark:bg-dark-bg-primary border-t border-light-border-primary dark:border-dark-border-primary">
+                            <div class="hidden md:block min-w-[64px] max-w-[64px] min-h-24 max-h-24 py-1.5 px-3">
                                 SVG ICON
                             </div>
-                            <div class="border-l border-light-border-primary dark:border-dark-border-primary w-full min-h-24 max-h-24 py-1.5 px-3 overflow-hidden whitespace-no-wrap text-overflow ellipsis">
+                            <div class="flex-grow min-h-24 max-h-24 py-1.5 px-3 overflow-hidden whitespace-no-wrap text-overflow ellipsis">
                                 <a href="{% pageurl mentor %}" class="link no-underline">
                                     <div class="overflow-hidden overflow-ellipsis">
                                         <article class="text-light-text-primary dark:text-dark-text-primary space-x-1">

@@ -46,6 +46,11 @@ module.exports = {
     ],
     theme: {
         extend: {
+            height: {
+                'screen-minus-8rem': 'calc(100vh - 8rem)',
+                'screen-minus-10rem': 'calc(100vh - 10rem)',
+                'parent-minus-2': 'calc(100% - 2rem)',
+            },
             colors: {
                 primary: {
                     "50": "#f0fdfa",
@@ -61,17 +66,20 @@ module.exports = {
                     "950": "#042f2e"
                 },
                 'light-bg-primary': '#f5f5f5',
-                'dark-bg-primary': '#121826',
+                'dark-bg-primary': '#1d2732',
                 'light-bg-secondary': '#ffffff',
-                'dark-bg-secondary': '#181f39',
+                'dark-bg-secondary': '#29323d',
+                //'dark-bg-secondary': '#181f39',
 
                 'light-text-primary': '#394150',
                 'dark-text-primary': '#d2d5da',
                 'light-text-secondary': '#394150',
                 'dark-text-secondary': '#97A3B6',
 
-                'light-border-primary': '#cdcfd1',
-                'dark-border-primary': '#4a5568',
+                'light-border-primary': '#99f6e4',
+                'dark-border-primary': '#115e59',
+//                'light-border-primary': '#cdcfd1',
+//                'dark-border-primary': '#4a5568',
 
             },
             fontFamily: {
