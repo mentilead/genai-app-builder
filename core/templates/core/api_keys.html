@@ -31,22 +31,28 @@
         <div class="h-screen flex flex-col mt-16">
             <span class="px-4 mt-4 font-semibold text-base text-light-text-secondary dark:text-dark-text-secondary leading-normal">List of API Keys</span>
             <section
-                    class="shadow-xl py-1 px-2 bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg m-4 min-w-[600px] max-w-[600px]">
+                    class="shadow-xl py-1 px-2 bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg m-4  min-w-[480px] max-w-480px] md:min-w-[576px] md:max-w-[576px]">
 
                 <div class="px-2 flex text-sm leading-4 text-light-text-primary dark:text-dark-text-primary">
-                    <div class="min-w-[200px] max-w-[128px] max-h-8 py-1.5 px-5">Name</div>
-                    <div class="min-w-[128px] max-w-[480px] max-h-8 py-1.5 px-5">Secret Key</div>
-                    <div class="min-w-[96px] max-w-[96px] max-h-8 py-1.5 px-5">Created</div>
+                    <div class="min-w-[200px] max-w-[200px] max-h-8 py-1.5 px-5">Name</div>
+                    <div class="min-w-[128px] max-w-[128px] max-h-8 py-1.5 px-5">Secret Key</div>
+                    <div class="min-w-[96px] max-w-[96px] max-h-8 py-1.5 px-5 hidden md:block">Created</div>
+                    <div class="min-w-[24px] max-w-[24px] max-h-8 py-1.5 px-5"></div>
+                    <div class="min-w-[24px] max-w-[24px] max-h-8 py-1.5 px-2"></div>
                 </div>
                 <div id="item-list" hx-trigger="load, apiKeysListChanged from:body"
                      hx-get="{% url 'core:api_keys_list' %}" hx-target="#item-list"
                      class="flex flex-col space-y-0 px-4 py-2">
+                    <svg width="24" height="24" stroke="#000" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><style>.spinner_V8m1{transform-origin:center;animation:spinner_zKoa 2s linear infinite}.spinner_V8m1 circle{stroke-linecap:round;animation:spinner_YpZS 1.5s ease-in-out infinite}@keyframes spinner_zKoa{100%{transform:rotate(360deg)}}@keyframes spinner_YpZS{0%{stroke-dasharray:0 150;stroke-dashoffset:0}47.5%{stroke-dasharray:42 150;stroke-dashoffset:-16}95%,100%{stroke-dasharray:42 150;stroke-dashoffset:-59}}</style><g class="spinner_V8m1"><circle cx="12" cy="12" r="9.5" fill="none" stroke-width="3"></circle></g></svg>
                 </div>
+                            <div class="flex px-4 mt-2 mb-2">
+                <button type="button" hx-get="{% url 'core:api_keys_add' %}" hx-target="#dialog"
+                        class="text-sm leading-4 py-1.5 px-3 text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+                    Register new GenAI provider
+                </button>
+            </div>
+
             </section>
-            <button type="button" hx-get="{% url 'core:api_keys_add' %}" hx-target="#dialog"
-                    class="ml-4 w-[16rem] text-sm leading-4 py-1.5 px-3 text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-                Register new GenAI provider
-            </button>
         </div>
 
         <!-- Modal -->
@@ -68,7 +74,7 @@
                 htmx.on("htmx:afterSwap", (e) => {
                     // Response targeting #dialog => show the modal
                     if (e.detail.target.id == "dialog") {
-                       Alpine.store('dialog').show();
+                        Alpine.store('dialog').show();
                     }
                 })
 
@@ -77,11 +83,6 @@
                     if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
                         Alpine.store('dialog').hide();
                     }
-                })
-
-                // Remove dialog content after hiding
-                htmx.on("hidden.bs.modal", () => {
-                    document.getElementById("dialog").innerHTML = ""
                 })
             });
         </script>
@@ -93,10 +94,10 @@
         document.addEventListener('alpine:init', () => {
             Alpine.store('dialog', {
                 openModal: false,
-                show: function() {
+                show: function () {
                     this.openModal = true;
                 },
-                hide: function() {
+                hide: function () {
                     this.openModal = false;
                 },
             });

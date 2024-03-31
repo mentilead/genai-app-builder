@@ -102,6 +102,16 @@ class MentorIndexPage(Page):
     ]
 
 
+class ProviderIndexPage(Page):
+    intro = RichTextField(blank=True)
+
+    content_panels = Page.content_panels + [
+        FieldPanel('intro')
+    ]
+
+    template = "genai_app/provider/provider_index_page.html"
+
+
 class ChatPage(Page):
     intro = RichTextField(blank=True)
 

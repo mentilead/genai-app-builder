@@ -7,6 +7,8 @@ from botocore.config import Config
 from langchain.llms.bedrock import Bedrock
 from langchain_core.prompts import PromptTemplate
 
+from genaiappbuilder import settings
+
 
 class BedrockClientManager:
     MAX_TOKENS = 4096
@@ -16,7 +18,7 @@ class BedrockClientManager:
     STOP_SEQUENCES = ["\n\nHuman"]
 
     def __init__(self, model_id, model_kwargs):
-        self.boto3_bedrock = self._get_bedrock_client()
+        self.boto3_bedrock = self._get_bedrock_client_customer()
         self.textgen_llm = self._init_textgen_llm(self.boto3_bedrock, model_id, model_kwargs)
 
     def _init_textgen_llm(self, boto3_bedrock, model_id, model_kwargs):
@@ -26,6 +28,51 @@ class BedrockClientManager:
                        model_kwargs=model_kwargs,
                        streaming=True
                        )
+
+    def _get_bedrock_client_customer(runtime: Optional[bool] = True):
+        target_region = os.environ.get("AWS_REGION", os.environ.get("AWS_DEFAULT_REGION"))
+        print(f"Create new client\n  Using region: {target_region}")
+        session_kwargs = {"region_name": target_region}
+        client_kwargs = {**session_kwargs}
+        sts_client = boto3.client('sts', region_name=target_region)
+        # Call the assume_role method of the STSConnection object and pass the role
+        # ARN,external ID and a role session name.
+        assumed_role_object = sts_client.assume_role(
+            RoleArn=settings.env('AWS_ROLE_ARN'),
+            RoleSessionName="AssumeRoleSession1",
+            ExternalId=settings.env('AWS_EXTERNAL_ID')
+        )
+        # From the response that contains the assumed role, get the temporary
+        # credentials that can be used to make subsequent API calls
+        credentials = assumed_role_object['Credentials']
+        retry_config = Config(
+            region_name=target_region,
+            retries={
+                "max_attempts": 10,
+                "mode": "standard",
+            },
+        )
+        session = boto3.Session(region_name=target_region,
+                                aws_access_key_id=credentials['AccessKeyId'],
+                                aws_secret_access_key=credentials['SecretAccessKey'],
+                                aws_session_token=credentials['SessionToken']
+                                )
+        if runtime:
+            service_name = 'bedrock-runtime'
+        else:
+            service_name = 'bedrock'
+
+        bedrock_client = session.client(
+            service_name=service_name,
+            config=retry_config,
+            **client_kwargs
+        )
+
+        print("boto3 Bedrock client successfully created!")
+        print(bedrock_client._endpoint)
+        return bedrock_client
+
+
 
     def _get_bedrock_client(runtime: Optional[bool] = True):
         target_region = os.environ.get("AWS_REGION", os.environ.get("AWS_DEFAULT_REGION"))

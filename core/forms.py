@@ -31,10 +31,22 @@ class LLMAPIKeyForm(forms.ModelForm):
         """
         api_key_name = self.cleaned_data.get('api_key_name')
         profile = UserProfile.objects.select_related('organization').get(user=self.user)
-        if LLMAPIKey.objects.filter(api_key_name=api_key_name, organization=profile.organization).exists():
+        api_keys = LLMAPIKey.objects.filter(api_key_name=api_key_name, organization=profile.organization)
+
+        # We are allowed to update and keep same name
+        if self.instance.pk:
+            api_keys = api_keys.exclude(pk=self.instance.pk)
+
+        if api_keys.exists():
             raise ValidationError('Name must be unique for your organization')
 
         return api_key_name
+
+    def clean_secret_key(self):
+        secret_key = self.cleaned_data.get('secret_key')
+        if self.cleaned_data.get('provider_name') == "aws_bedrock" and not secret_key:
+            raise ValidationError('Secret key is required for AWS Bedrock')
+        return secret_key
 
     class Meta:
         model = LLMAPIKey

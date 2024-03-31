@@ -1,0 +1,209 @@
+{% extends "base_app.html" %}
+{% load wagtailcore_tags %}
+{% load widget_tweaks %}
+
+{% block extra_head %}
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+{% endblock %}
+{% block app_content %}
+    <main id="main_element" class="w-full flex flex-col"
+          @dialog-loaded.window="alert('hello');"
+          x-data="{ 'openModal': $store.dialog.openModal }"
+          @keydown.escape="Alpine.store('dialog').hide()">
+        <div class="h-16 bg-light-bg-secondary dark:bg-dark-bg-secondary p-4 fixed top-0 w-full z-10">
+            <nav class="flex items-center justify-between flex-wrap">
+                <div class="flex items-center flex-shrink-0 mr-6">
+                    <span class="font-bold text-xl leading-normal text-light-text-primary dark:text-dark-text-primary">API Keys</span>
+                </div>
+                <button @click="open = !open" class="md:hidden">
+                    <!-- Menu icon goes here -->
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true"
+                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+                              d="M5 7h14M5 12h14M5 17h14"/>
+                    </svg>
+                </button>
+            </nav>
+        </div>
+        <div class="h-screen flex flex-col mt-16">
+            <span class="px-4 mt-4 font-semibold text-base text-light-text-secondary dark:text-dark-text-secondary leading-normal">{{ page.intro|richtext }}</span>
+            <!-- OpenAI -->
+            <section
+                    class="shadow-xl py-1 px-2 bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg m-4 md:min-w-[576px] md:max-w-[576px]">
+
+                <div class="px-2 flex text-sm leading-4 text-light-text-primary dark:text-dark-text-primary">
+                    <div class="min-w-[200px] max-w-[200px] max-h-8 py-1.5 px-5">Name</div>
+                    <div class="min-w-[128px] max-w-[128px] max-h-8 py-1.5 px-5">Secret Key</div>
+                    <div class="min-w-[96px] max-w-[96px] max-h-8 py-1.5 px-5 hidden md:block">Created</div>
+                    <div class="min-w-[24px] max-w-[24px] max-h-8 py-1.5 px-5"></div>
+                    <div class="min-w-[24px] max-w-[24px] max-h-8 py-1.5 px-2"></div>
+                </div>
+                <div id="openai-api-key-list" hx-trigger="load, openAIAPIKeyListChanged from:body"
+                     hx-get="{% url 'genai_app:openai_org_api_key_list' %}?provider_type=OPENAI"
+                     hx-target="#openai-api-key-list"
+                     class="flex flex-col space-y-0 px-4 py-2">
+                    <svg width="24" height="24" stroke="#000" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <style>.spinner_V8m1 {
+                            transform-origin: center;
+                            animation: spinner_zKoa 2s linear infinite
+                        }
+
+                        .spinner_V8m1 circle {
+                            stroke-linecap: round;
+                            animation: spinner_YpZS 1.5s ease-in-out infinite
+                        }
+
+                        @keyframes spinner_zKoa {
+                            100% {
+                                transform: rotate(360deg)
+                            }
+                        }
+
+                        @keyframes spinner_YpZS {
+                            0% {
+                                stroke-dasharray: 0 150;
+                                stroke-dashoffset: 0
+                            }
+                            47.5% {
+                                stroke-dasharray: 42 150;
+                                stroke-dashoffset: -16
+                            }
+                            95%, 100% {
+                                stroke-dasharray: 42 150;
+                                stroke-dashoffset: -59
+                            }
+                        }</style>
+                        <g class="spinner_V8m1">
+                            <circle cx="12" cy="12" r="9.5" fill="none" stroke-width="3"></circle>
+                        </g>
+                    </svg>
+                </div>
+                <div class="flex px-4 mt-2 mb-2">
+                    <button type="button"
+                            hx-get="{% url 'genai_app:openai_org_api_key_create_view' %}?provider_type=OPENAI"
+                            hx-target="#dialog"
+                            class="text-sm leading-4 py-1.5 px-3 text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+                        Register OpenAI API key
+                    </button>
+                </div>
+
+            </section>
+            <!-- AWS Bedrock -->
+            <section
+                    class="shadow-xl py-1 px-2 bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg m-4 md:min-w-[876px] md:max-w-[876px]">
+
+                <div class="px-2 flex text-sm leading-4 text-light-text-primary dark:text-dark-text-primary">
+                    <div class="min-w-[200px] max-w-[200px] max-h-8 py-1.5 px-5">Name</div>
+                    <div class="min-w-[300px] max-w-[300px] max-h-8 py-1.5 px-5">AWS Account and IAM Role</div>
+                    <div class="min-w-[120px] max-w-[120px] max-h-8 py-1.5 px-5">Region</div>
+                    <div class="min-w-[128px] max-w-[128px] max-h-8 py-1.5 px-5 hidden md:block">Created</div>
+                    <div class="min-w-[24px] max-w-[24px] max-h-8 py-1.5 px-5"></div>
+                    <div class="min-w-[24px] max-w-[24px] max-h-8 py-1.5 px-2"></div>
+                </div>
+                <div id="aws-bedrock-arn-role-list" hx-trigger="load, awsBedrockIAMRoleArnListChanged from:body"
+                     hx-get="{% url 'genai_app:aws_bedrock_org_iam_role_arn_list' %}?provider_type=AWS_BEDROCK"
+                     hx-target="#aws-bedrock-arn-role-list"
+                     class="flex flex-col space-y-0 px-4 py-2">
+                    <svg width="24" height="24" stroke="#000" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <style>.spinner_V8m1 {
+                            transform-origin: center;
+                            animation: spinner_zKoa 2s linear infinite
+                        }
+
+                        .spinner_V8m1 circle {
+                            stroke-linecap: round;
+                            animation: spinner_YpZS 1.5s ease-in-out infinite
+                        }
+
+                        @keyframes spinner_zKoa {
+                            100% {
+                                transform: rotate(360deg)
+                            }
+                        }
+
+                        @keyframes spinner_YpZS {
+                            0% {
+                                stroke-dasharray: 0 150;
+                                stroke-dashoffset: 0
+                            }
+                            47.5% {
+                                stroke-dasharray: 42 150;
+                                stroke-dashoffset: -16
+                            }
+                            95%, 100% {
+                                stroke-dasharray: 42 150;
+                                stroke-dashoffset: -59
+                            }
+                        }</style>
+                        <g class="spinner_V8m1">
+                            <circle cx="12" cy="12" r="9.5" fill="none" stroke-width="3"></circle>
+                        </g>
+                    </svg>
+                </div>
+                <div class="flex px-4 mt-2 mb-2">
+                    <button type="button"
+                            hx-get="{% url 'genai_app:aws_bedrock_org_role_arn_create_view' %}?provider_type=AWS_BEDROCK"
+                            hx-target="#dialog"
+                            class="text-sm leading-4 py-1.5 px-3 text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+                        Register AWS IAM Role ARN
+                    </button>
+                </div>
+
+            </section>
+
+        </div>
+
+        <!-- Modal -->
+        <div x-cloak x-show="$store.dialog.openModal"
+             class="fixed z-10 inset-0 overflow-y-auto"
+             aria-labelledby="modal-title"
+             role="dialog"
+             aria-modal="true">
+            <div class="flex min-h-screen pt-4 px-4 pb-20 items-center justify-center">
+                <!-- modal overlay -->
+                <div class="fixed inset-0 bg-gray-950 bg-opacity-75 transition-opacity"
+                     @click="Alpine.store('dialog').hide()"></div>
+                <div id="dialog" hx-target="this"></div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', (event) => {
+                htmx.on("htmx:afterSwap", (e) => {
+                    // Response targeting #dialog => show the modal
+                    if (e.detail.target.id == "dialog") {
+                        Alpine.store('dialog').show();
+                    }
+                })
+
+                htmx.on("htmx:beforeSwap", (e) => {
+                    // Empty response targeting #dialog => hide the modal
+                    if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
+                        Alpine.store('dialog').hide();
+                    }
+                })
+            });
+        </script>
+
+    </main>
+{% endblock %}
+{% block extra_body %}
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('dialog', {
+                openModal: false,
+                show: function () {
+                    this.openModal = true;
+                },
+                hide: function () {
+                    this.openModal = false;
+                },
+            });
+        })
+    </script>
+
+{% endblock %}

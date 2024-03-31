@@ -5,9 +5,10 @@ from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
 from django.views import View
 from django.shortcuts import render, redirect
-from django.views.generic import FormView, ListView, TemplateView
+from django.views.generic import FormView, ListView, TemplateView, UpdateView, DeleteView
 from django.views.generic.edit import FormMixin
 
+from genai_app.models import OrgProvider
 from .forms import LLMAPIKeyForm
 from .models import LLMAPIKey, UserProfile, LLMAPIKey
 from .forms import OrganizationForm
@@ -27,7 +28,6 @@ class OrganizationView(FormView, LoginRequiredMixin):
     template_name = 'core/organization.html'
     form_class = OrganizationForm
 
-
     def get_success_url(self):
         return reverse('core:organization')
 
@@ -42,7 +42,8 @@ class OrganizationView(FormView, LoginRequiredMixin):
     def post(self, request, *args, **kwargs):
         user_profile = UserProfile.objects.get(user=self.request.user)
         organization = user_profile.organization
-        form = self.form_class(data=request.POST, instance=organization)  # Bind form with POST data and organization instance
+        form = self.form_class(data=request.POST,
+                               instance=organization)  # Bind form with POST data and organization instance
         if form.is_valid():
             organization = form.save()
             # Re-initialize form with newly saved organization instance
@@ -55,7 +56,7 @@ class OrganizationView(FormView, LoginRequiredMixin):
 organization_view = OrganizationView.as_view()
 
 
-class LLMAPIKeyListView(ListView, LoginRequiredMixin):
+class LLMAPIKeyListView(LoginRequiredMixin, ListView):
     model = LLMAPIKey
     template_name = 'core/api_keys_list.html'
     context_object_name = 'api_keys'
@@ -68,7 +69,19 @@ class LLMAPIKeyListView(ListView, LoginRequiredMixin):
 llm_api_keys_list_view = LLMAPIKeyListView.as_view()
 
 
-class LLMAPIKeyListAdd(FormView, LoginRequiredMixin):
+class LLMAPIKeyListBaseForm(LoginRequiredMixin, FormMixin):
+    model = LLMAPIKey
+    form_class = LLMAPIKeyForm
+    template_name = 'core/api_keys_form.html'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        # update the kwargs with user
+        kwargs.update({'user': self.request.user})
+        return kwargs
+
+
+class LLMAPIKeyListAdd(LLMAPIKeyListBaseForm, FormView):
     model = LLMAPIKey
     form_class = LLMAPIKeyForm
     template_name = 'core/api_keys_form.html'
@@ -86,17 +99,60 @@ class LLMAPIKeyListAdd(FormView, LoginRequiredMixin):
                 })
             })
 
-    def get_form_kwargs(self):
-        kwargs = super(LLMAPIKeyListAdd, self).get_form_kwargs()
-        # update the kwargs with user
-        kwargs.update({'user': self.request.user})
-        return kwargs
-
 
 llm_api_keys_add_view = LLMAPIKeyListAdd.as_view()
 
 
-class LLMAPIKeyView(TemplateView, LoginRequiredMixin):
+class LLMAPIKeyListEdit(LLMAPIKeyListBaseForm, UpdateView):
+    model = LLMAPIKey
+    form_class = LLMAPIKeyForm
+    template_name = 'core/api_keys_form.html'
+
+    def form_valid(self, form):
+        self.object.save()
+        return HttpResponse(
+            status=204,
+            headers={
+                'HX-Trigger': json.dumps({
+                    "apiKeysListChanged": None
+                })
+            })
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        profile = UserProfile.objects.select_related('organization').get(user=self.request.user)
+
+        return queryset.filter(organization=profile.organization)
+
+
+llm_api_keys_edit_view = LLMAPIKeyListEdit.as_view()
+
+
+class LLMAPIKeyListRemove(LoginRequiredMixin, DeleteView):
+    model = LLMAPIKey
+    template_name = 'core/api_keys_remove.html'
+
+    def form_valid(self, form):
+        self.object.delete()
+        return HttpResponse(
+            status=204,
+            headers={
+                'HX-Trigger': json.dumps({
+                    "apiKeysListChanged": None
+                })
+            })
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        profile = UserProfile.objects.select_related('organization').get(user=self.request.user)
+
+        return queryset.filter(organization=profile.organization)
+
+
+llm_api_keys_remove_view = LLMAPIKeyListRemove.as_view()
+
+
+class LLMAPIKeyView(LoginRequiredMixin, TemplateView):
     template_name = 'core/api_keys.html'
 
 

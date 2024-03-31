@@ -15,6 +15,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path('uip/', ui_playground_view, name='ui_playground'),
     path('core/', include('core.urls')),
+    path('genai_app/', include('genai_app.urls')),
+    path('accounts/', include('allauth.urls')),
     # Wagtail
     path("wagtail-admin/", include(wagtailadmin_urls)),
     path('documents/', include(wagtaildocs_urls)),
