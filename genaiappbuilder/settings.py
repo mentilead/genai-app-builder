@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "tailwind",
     "django_browser_reload",
     "tinymce",
+    "auditlog",
     # auth
     'allauth',
     'allauth.account',
@@ -95,6 +96,7 @@ MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     "wagtail.contrib.redirects.middleware.RedirectMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "auditlog.middleware.AuditlogMiddleware",
 ]
 
 ROOT_URLCONF = "genaiappbuilder.urls"

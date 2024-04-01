@@ -22,7 +22,7 @@
             {{ item.create_date|date:"d F Y" }}
         </div>
         <div class="hover:cursor-pointer min-w-[24px] max-w-[24px] max-h-8 py-1.5 px-5" hx-trigger="click"
-             hx-get="{% url 'genai_app:aws_bedrock_org_role_arn_update_view' pk=item.pk %}?provider_type=AWS_BEDROCK"
+             hx-get="{% url 'genai_app:org_provider_update_view' pk=item.pk %}?provider_type=AWS_BEDROCK"
              hx-target="#dialog">
             <svg class="w-6 h-6 text-light-text-primary dark:text-dark-text-primary" aria-hidden="true"
                  xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -31,7 +31,7 @@
             </svg>
         </div>
         <div class="hover:cursor-pointer min-w-[24px] max-w-[24px] max-h-8 py-1.5 px-2" hx-trigger="click"
-             hx-get="{% url 'core:api_keys_remove' pk=item.pk %}?provider_type=OPENAI" hx-target="#dialog">
+             hx-get="{% url 'genai_app:org_provider_delete_view' pk=item.pk %}?provider_type=AWS_BEDROCK" hx-target="#dialog">
             <svg class="w-6 h-6 text-light-text-primary dark:text-dark-text-primary" aria-hidden="true"
                  xmlns="http://www.w3.org/2000/svg"
                  width="24" height="24" fill="none" viewBox="0 0 24 24">

@@ -1,9 +1,9 @@
 import json
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden
 from django.views.generic import ListView, CreateView, UpdateView
-from django.views.generic.edit import FormMixin
+from django.views.generic.edit import FormMixin, DeleteView
 
 from core.models import UserProfile
 from .forms import OpenAIAPIKeyForm, AWSBedrockForm
@@ -45,6 +45,18 @@ class OrgProviderBaseForm(LoginRequiredMixin, FormMixin):
         self.provider_type = request.GET.get('provider_type')
         return super().dispatch(request, *args, **kwargs)
 
+    def get(self, request, *args, **kwargs):
+        pk = self.kwargs.get('pk')
+
+        if pk is not None:
+            try:
+                profile = UserProfile.objects.select_related('organization').get(user=self.request.user)
+                OrgProvider.objects.get(pk=pk, organization=profile.organization)
+            except OrgProvider.DoesNotExist:
+                return HttpResponseForbidden("You are not allowed to view this resource.")
+
+        return super().get(request, *args, **kwargs)
+
     def get_form_class(self):
         if self.provider_type == OrgProvider.Provider.OPENAI:
             return OpenAIAPIKeyForm
@@ -82,7 +94,14 @@ class OrgProviderBaseForm(LoginRequiredMixin, FormMixin):
             raise ValueError(f"Invalid provider type: {self.provider_type}")
 
         profile = UserProfile.objects.select_related('organization').get(user=self.request.user)
-        obj.organization = profile.organization
+        # Ensure the user's organization matches what's being saved
+        if obj.id and obj.organization and obj.organization != profile.organization:
+            raise ValueError('The selected organization does not correspond to the users organization')
+
+        # Prevent an update if the organization already exists
+        if not obj.id:
+            obj.organization = profile.organization
+
         obj.save()
 
         return HttpResponse(
@@ -102,8 +121,50 @@ class OrgProviderUpdateView(OrgProviderBaseForm, UpdateView):
     pass
 
 
-openai_org_api_key_create_view = OrgProviderCreateView.as_view()
-openai_org_api_key_update_view = OrgProviderUpdateView.as_view()
+org_provider_create_view = OrgProviderCreateView.as_view()
+org_provider_update_view = OrgProviderUpdateView.as_view()
 
-aws_bedrock_org_role_arn_create_view = OrgProviderCreateView.as_view()
-aws_bedrock_org_role_arn_update_view = OrgProviderUpdateView.as_view()
+
+class OrgProviderRemove(LoginRequiredMixin, DeleteView):
+    model = OrgProvider
+    template_name = 'genai_app/provider/provider_remove.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.provider_type = request.GET.get('provider_type')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        self.object.delete()
+        if self.provider_type == OrgProvider.Provider.OPENAI:
+            change_trigger = 'openAIAPIKeyListChanged'
+        elif self.provider_type == OrgProvider.Provider.AWS_BEDROCK:
+            change_trigger = 'awsBedrockIAMRoleArnListChanged'
+        else:
+            raise ValueError(f"Invalid provider type: {self.provider_type}")
+
+        return HttpResponse(
+            status=204,
+            headers={
+                'HX-Trigger': json.dumps({
+                    f"{change_trigger}": None
+                })
+            })
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        profile = UserProfile.objects.select_related('organization').get(user=self.request.user)
+
+        return queryset.filter(organization=profile.organization)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.provider_type == OrgProvider.Provider.OPENAI:
+            context['provider_registration_type'] = 'OpenAI API Key'
+        elif self.provider_type == OrgProvider.Provider.AWS_BEDROCK:
+            context['provider_registration_type'] = 'AWS Bedrock Role ARN'
+        else:
+            raise ValueError(f"Invalid provider type: {self.provider_type}")
+        return context
+
+
+org_provider_delete_view = OrgProviderRemove.as_view()

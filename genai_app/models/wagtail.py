@@ -105,8 +105,13 @@ class MentorIndexPage(Page):
 class ProviderIndexPage(Page):
     intro = RichTextField(blank=True)
 
+    openai_instructions = RichTextField(blank=True)
+    aws_bedrock_instructions = RichTextField(blank=True)
+
     content_panels = Page.content_panels + [
-        FieldPanel('intro')
+        FieldPanel('intro'),
+        FieldPanel('openai_instructions'),
+        FieldPanel('aws_bedrock_instructions'),
     ]
 
     template = "genai_app/provider/provider_index_page.html"

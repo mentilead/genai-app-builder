@@ -3,22 +3,16 @@
 <div class="shadow-xl transform transition-all">
     <div class="bg-light-bg-secondary dark:bg-dark-bg-secondary rounded-lg">
         <span class="flex flex-col">
-            <span class="mt-4 ml-4">Delete GenAI Provider registration</span>
+            <span class="mt-4 ml-4">Delete {{ provider_registration_type }} registration</span>
             <form novalidate id="api_key_form"
-                  hx-post="{{ request.path }}"
+                  hx-post="{{ request.get_full_path }}"
                   hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
                   class="flex flex-col p-4 space-y-2">
                 <span class="w-[24rem] text-sm leading-4 text-light-text-primary dark:text-dark-text-primary">
-                    This GenAI Provider registration will immediately be removed. No mentor sessions will be able to use this GenAI Provider registration anymore.
+                    This {{ provider_registration_type }} registration will immediately be removed. No mentor sessions will be able to use this {{ provider_registration_type }} registration anymore.
                 </span>
                 <span class="block w-[24rem] text-sm leading-4 py-1.5 px-3 text-light-text-primary dark:text-dark-text-primary bg-light-bg-primary dark:bg-dark-bg-primary border border-light-border-primary dark:border-dark-border-primary">
-                    {% with api_key=llmapikey.api_key %}
-                        {% with api_key|length as total_len %}
-                            {% with total_len|add:"-4" as secret_middle %}
-                                {{ api_key|slice:":4" }}...{{ api_key|slice:"-4:" }}
-                            {% endwith %}
-                        {% endwith %}
-                    {% endwith %}
+                    {{ orgprovider.name }}
                 </span>
                 <div class="flex justify-end space-x-2">
                     <button type="button" @click="Alpine.store('dialog').hide()"
@@ -27,7 +21,7 @@
                     </button>
                     <button type="submit"
                             class="text-sm leading-4 py-1.5 px-3 text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-                        Delete GenAI Provider registration
+                        Delete {{ provider_registration_type }} registration
                     </button>
                 </div>
                 {% csrf_token %}

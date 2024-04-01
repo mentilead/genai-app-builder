@@ -1,4 +1,5 @@
 from django.db import models
+from auditlog.registry import auditlog
 
 from core.models import Organization
 
@@ -35,10 +36,13 @@ class OrgProvider(models.Model):
     aws_bedrock = AWSBedrockManager()
 
     class Meta:
-        ordering=['organization', 'provider', 'name']
+        ordering = ['organization', 'provider', 'name']
         indexes = [
             models.Index(fields=['organization', 'provider', 'name'])
         ]
 
     def __str__(self):
         return f"{self.organization}-{self.provider}-{self.name}"
+
+
+auditlog.register(OrgProvider, mask_fields=['val1', 'val2', 'val3'])
