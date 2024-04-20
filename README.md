@@ -15,8 +15,23 @@
 `cp .sample-env .env`
 
 ### setup env variables
-In the .env files you need to setup connection details to Postgres and Redis.
-You also need to set a secret django key
+In the .env files you need to setup connection details to 
+Postgres:
+CREATE DATABASE genaiappbuilder;
+CREATE ROLE genaiappbuilder WITH LOGIN PASSWORD 'strong_password'; 
+ALTER DATABASE genaiappbuilder OWNER TO genaiappbuilder;
+
+Redis:
+redis-cli
+ACL SETUSER user >password on allchannels allkeys +get +set +del allcommands
+You also need to set a secret django key:
+
+`
+import string
+import random
+
+''.join(random.SystemRandom().choice(string.ascii_letters + string.digits + string.punctuation) for _ in range(50))
+`
 
 ## install node dependencies
 `npm install`

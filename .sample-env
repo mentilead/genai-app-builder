@@ -9,8 +9,20 @@ PGUSER='yourusername'
 PGPASSWORD='yoursecurepassword'
 PGPORT='5432'
 PGCONN_MAX_AGE='30'
-PGSSLMODE='require'
+PGSSLMODE='disable'
 
 # Redis
+REDISHOST='yourredishost'
 REDISUSER='yourusername'
 REDISPASSWORD='yoursecurepassword'
+
+# Wagtail
+REMOTEDEV_WAGTAIL_SECRET_KEY='yoursecretkey'
+LOCAL_WAGTAIL_SECRET_KEY='yoursecretkey'
+
+# AWS
+AWS_REGION='yourawsregion'
+
+# AllAuth Social
+ALLAUTH_GOOGLE_CLIENT_ID='yourgoogleclientid'
+ALLAUTH_GOOGLE_SECRET='yourgooglesecret'

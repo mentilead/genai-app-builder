@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from django.db import models
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.template.response import TemplateResponse
 from django.utils import timezone as django_timezone
 from modelcluster.fields import ParentalKey
@@ -35,7 +35,7 @@ class MentorSession:
         self.mentor_url = mentor_url
 
 
-class Dashboard(Page, LoginRequiredMixin):
+class Dashboard(LoginRequiredMixin, Page):
     intro = RichTextField(blank=True)
 
     content_panels = Page.content_panels + [
@@ -82,6 +82,10 @@ class Dashboard(Page, LoginRequiredMixin):
         return context
 
     def serve(self, request, *args, **kwargs):
+        # if user is not authenticated
+        if not request.user.is_authenticated:
+            # make a redirect to login page
+            return redirect('account_login')
         context = self.get_context(request, *args, **kwargs)
         response = super().serve(request, *args, **kwargs)
         previous_evaluated_key = context.get("previous_evaluated_key")

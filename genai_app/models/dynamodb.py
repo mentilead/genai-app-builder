@@ -11,7 +11,11 @@ from genaiappbuilder import settings
 class BaseDynamoDBModel:
     def __init__(self, table_name):
         self.session = boto3.session.Session()
-        self.dynamodb_resource = self.session.resource('dynamodb', region_name=settings.AWS_REGION)
+        if settings.AWS_DYNAMODB_HOST is not None:
+            self.dynamodb_resource = self.session.resource('dynamodb', region_name=settings.AWS_REGION,
+                                                           endpoint_url=f'http://{settings.AWS_DYNAMODB_HOST}')
+        else:
+            self.dynamodb_resource = self.session.resource('dynamodb', region_name=settings.AWS_REGION)
         self.table = self.dynamodb_resource.Table(table_name)
 
     def get_item(self, key):

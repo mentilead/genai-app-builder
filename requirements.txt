@@ -14,6 +14,9 @@ django-taggit==5.0.1
 django-tailwind==3.8.0
 django-tinymce==3.7.1
 django-widget-tweaks==1.5.0
+django-auditlog==3.0.0
+django-allauth==0.61.1
+django-allauth-ui==0.2.2
 langchain==0.1.13
 langchain-community==0.0.29
 langchain-core==0.1.33

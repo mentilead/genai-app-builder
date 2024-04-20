@@ -62,7 +62,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-
+    'allauth_ui',
     'allauth.socialaccount.providers.google',
     # wagtail apps
     "wagtail.contrib.forms",
@@ -171,6 +171,29 @@ AUTHENTICATION_BACKENDS = [
     # `allauth` specific authentication methods, such as login by email
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
+SITE_ID = 1
+LOGIN_REDIRECT_URL = '/'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_NOTIFICATIONS = True
+ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE=True
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': env('ALLAUTH_GOOGLE_CLIENT_ID'),
+            'secret': env('ALLAUTH_GOOGLE_SECRET'),
+            'key': '123'
+        },
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        }
+    }
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -226,7 +249,7 @@ ASGI_APPLICATION = "genaiappbuilder.asgi.application"
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://{env('REDISUSER')}@localhost:6379/0",
+        "LOCATION": f"redis://{env('REDISUSER')}@{env('REDISHOST')}:6379/0",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "PASSWORD": env('REDISPASSWORD')
@@ -238,8 +261,10 @@ SESSION_CACHE_ALIAS = "default"
 
 AUTH_USER_MODEL = 'auth.User'
 AWS_REGION=env('AWS_REGION')
+AWS_DYNAMODB_HOST=env('AWS_DYNAMODB_HOST', default=None)
 
 INTERNAL_IPS = [
     '109.58.234.109'
 ]
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

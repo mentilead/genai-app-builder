@@ -370,3 +370,6 @@ dist
 
 # redis
 *.rdb
+
+# mac
+.DS_Store

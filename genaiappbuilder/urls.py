@@ -17,6 +17,7 @@ urlpatterns = [
     path('core/', include('core.urls')),
     path('genai_app/', include('genai_app.urls')),
     path('accounts/', include('allauth.urls')),
+    path('accounts/', include('allauth.socialaccount.urls')),
     # Wagtail
     path("wagtail-admin/", include(wagtailadmin_urls)),
     path('documents/', include(wagtaildocs_urls)),
