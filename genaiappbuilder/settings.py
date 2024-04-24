@@ -13,7 +13,6 @@ import environ
 import os
 from pathlib import Path
 
-
 env = environ.Env(
     # set casting, default value
     DEBUG=(bool, False)
@@ -21,7 +20,6 @@ env = environ.Env(
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Take environment variables from .env file
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
@@ -36,9 +34,7 @@ DEBUG = env('DEBUG')
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRETKEY')
 
-
 ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
@@ -61,6 +57,7 @@ INSTALLED_APPS = [
     # auth
     'allauth',
     'allauth.account',
+    'allauth.mfa',
     'allauth.socialaccount',
     'allauth_ui',
     'allauth.socialaccount.providers.google',
@@ -121,7 +118,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "genaiappbuilder.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
@@ -145,7 +141,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -171,12 +166,18 @@ AUTHENTICATION_BACKENDS = [
     # `allauth` specific authentication methods, such as login by email
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
+
+AUTH_USER_MODEL = "core.CustomUser"
 SITE_ID = 1
 LOGIN_REDIRECT_URL = '/'
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_EMAIL_NOTIFICATIONS = True
-ACCOUNT_AUTHENTICATION_METHOD = "email"
-ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE=True
+ACCOUNT_SIGNUP_EMAIL_ENTER_TWICE = True
+MFA_ADAPTER = "allauth.mfa.adapter.DefaultMFAAdapter"
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
@@ -205,7 +206,6 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
@@ -259,12 +259,52 @@ CACHES = {
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 
-AUTH_USER_MODEL = 'auth.User'
-AWS_REGION=env('AWS_REGION')
-AWS_DYNAMODB_HOST=env('AWS_DYNAMODB_HOST', default=None)
+AWS_REGION = env('AWS_REGION')
+AWS_DYNAMODB_HOST = env('AWS_DYNAMODB_HOST', default=None)
 
 INTERNAL_IPS = [
     '109.58.234.109'
 ]
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+CELERY_BROKER_URL = env('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
+CELERY_LOG_LEVEL = 'INFO'
+CELERY_WORKER_LOG_FORMAT = '[%(levelname)s/%(processName)s] (%(module)s.%(funcName)s): %(message)s'
+CELERY_WORKER_TASK_LOG_FORMAT = '[%(levelname)s/%(processName)s] %(task_name)s[%(task_id)s]: %(message)s'
+# LiteLLM
+LITE_LLM_API_KEY = env('LITE_LLM_API_KEY')
+LITE_LLL_BASE_URL = env('LITE_LLL_BASE_URL')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': ('{levelname} {asctime} {module} '
+                       '{process:d} {thread:d} {message}'),
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'celery': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+    },
+}

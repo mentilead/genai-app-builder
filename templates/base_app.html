@@ -31,14 +31,14 @@
                     </button>
                 </div>
                 <div class="flex flex-col space-y-2 mt-6 justify-between">
-                    {% slugurl 'home' as home_url %}
-                    <div class="flex space-x-1 p-1 rounded {% if request.path == home_url %} bg-primary-500 dark:bg-primary-800{% else %}hover:bg-primary-100 hover:dark:bg-primary-700{% endif %}">
+                    {% slugurl 'dashboard' as dashboard_url %}
+                    <div class="flex space-x-1 p-1 rounded {% if request.path == dashboard_url %} bg-primary-500 dark:bg-primary-800{% else %}hover:bg-primary-100 hover:dark:bg-primary-700{% endif %}">
                         <svg class="w-6 h-6" aria-hidden="true"
                              xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                   d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5"/>
                         </svg>
-                        <a @click="open = false" href="{{ home_url }}">Home</a>
+                        <a @click="open = false" href="{{ dashboard_url }}">Dashboard</a>
                     </div>
                     {% slugurl 'mentors' as mentors_url %}
                     <div class="flex space-x-1 p-1 rounded {% if request.path == mentors_url %} bg-primary-500 dark:bg-primary-800{% else %}hover:bg-primary-100 hover:dark:bg-primary-700{% endif %}">

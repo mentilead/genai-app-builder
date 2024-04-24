@@ -20,10 +20,12 @@ from wagtail.admin.panels import FieldPanel, InlinePanel
 from wagtail import blocks
 from wagtail.images.blocks import ImageChooserBlock
 from wagtail.contrib.forms.utils import get_field_clean_name
+import openai
 
 from genaiappbuilder import settings
 
 from genai.providers.bedrock import BedrockClientManager
+from .genai import OrgProvider
 from .dynamodb import MentorSessionDDB, MentorSessionHistoryDDB
 
 
@@ -69,7 +71,8 @@ class Dashboard(LoginRequiredMixin, Page):
                 mentor_url = f"{page.url}?openId={int(item['create_date'])}"
                 page_title = page.title
 
-            mentor_session.append(MentorSession(int(item["create_date"]), mentoring_data["runnable_output"], page_title, mentor_url))
+            mentor_session.append(
+                MentorSession(int(item["create_date"]), mentoring_data["runnable_output"], page_title, mentor_url))
 
         context['mentor_session'] = mentor_session
         last_evaluated_key = response.get("LastEvaluatedKey")
@@ -292,20 +295,40 @@ class PromptPage(AbstractForm):
                             "top_p": int(request.POST["top_p"]),
                             "stop_sequences": ["\n\nHuman"]
                             }
-
-
         prompt = BedrockClientManager.create_prompt(self.prompts.raw_data[0]["value"][0]["value"]["prompt_text"],
                                                     **form_submission.form_data)
-        client = BedrockClientManager("anthropic.claude-v2:1", model_kwargs=model_parameters)
 
-        response = client.textgen_llm.invoke(input=prompt)
-        context["runnable_output"] = response
+        user_profile_organization = self.request.user.userprofile.organization
+        first_provider = OrgProvider.openai.filter(organization=user_profile_organization).first()
+
+        client = openai.OpenAI(
+            api_key="sk-6FhfLy0pTsU5Fv46i2WKvQ",
+            base_url="http://192.168.0.184:4000"
+        )
+
+        # request sent to model set on litellm proxy, `litellm --model`
+        response = client.chat.completions.create(model="gpt-3.5-turbo", messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+          extra_body={
+              "api_key": first_provider.val1})  # 👈 User Key
+
+        print(response)
+
+
+#        client = BedrockClientManager("anthropic.claude-v2:1", model_kwargs=model_parameters)
+
+#        response = client.textgen_llm.invoke(input=prompt)
+        context["runnable_output"] = response.choices[0].message.content
 
         mentoring_data = {
             'page_id': self.id,
             'model_parameters': model_parameters,
             'form_data': form_submission.form_data,
-            'runnable_output': response
+            'runnable_output': response.choices[0].message.content
         }
         mentoring_data_json = json.dumps(mentoring_data, cls=DecimalEncoder)
 
@@ -343,6 +366,7 @@ class PromptPage(AbstractForm):
                             "runnable_output": history_mentoring_data["runnable_output"],
                             "mentor_url": f"{self.url}?openId={create_date}&historyId={item['history_date']}"})
         return history
+
 
 class CustomFormSubmission(AbstractFormSubmission):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

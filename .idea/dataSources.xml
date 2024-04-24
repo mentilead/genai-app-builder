@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="genaiappbuilder@localhost" uuid="54d70491-74ac-4a7b-b21d-ca0720ea3504">
-      <driver-ref>postgresql</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5432/genaiappbuilder</jdbc-url>
-      <working-dir>$ProjectFileDir$</working-dir>
-    </data-source>
     <data-source source="LOCAL" name="0@127.0.0.1" uuid="047e5d53-d09e-4372-8b1e-c7b40d44c787">
       <driver-ref>redis</driver-ref>
       <synchronize>true</synchronize>
@@ -22,13 +15,6 @@
       <remarks>$PROJECT_DIR$/genaiappbuilder/settings.py</remarks>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
       <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/db.sqlite3</jdbc-url>
-      <working-dir>$ProjectFileDir$</working-dir>
-    </data-source>
-    <data-source source="LOCAL" name="genaiappbuilder@localhost [2]" uuid="468022fe-b512-47ed-b3c9-ed28985fc57a">
-      <driver-ref>postgresql</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5432/genaiappbuilder</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
     <data-source source="LOCAL" name="postgres@192.168.0.184" uuid="03187280-9941-4afa-bf5b-92f281dfac7b">

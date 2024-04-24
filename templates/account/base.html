@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+{% block extra_head %}
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="flex flex-col items-center justify-center w-screen h-screen text-light-text-primary dark:text-dark-text-primary bg-light-bg-primary dark:bg-dark-bg-primary">
+        <div class="flex flex-col items-center p-12 bg-light-bg-secondary dark:bg-dark-bg-secondary rounded shadow-lg grow-0">
+            {% block whitebox %}
+            {% endblock %}
+        </div>
+    </div>
+{% endblock %}

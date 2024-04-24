@@ -16,6 +16,7 @@ django-tinymce==3.7.1
 django-widget-tweaks==1.5.0
 django-auditlog==3.0.0
 django-allauth==0.61.1
+django-allauth[mfa]
 django-allauth-ui==0.2.2
 langchain==0.1.13
 langchain-community==0.0.29
@@ -23,8 +24,10 @@ langchain-core==0.1.33
 langchain-openai==0.1.1
 langchain-text-splitters==0.0.1
 langsmith==0.1.31
+litellm==1.35.18
 psycopg2-binary==2.9.9
 redis==5.0.3
 redisboard==0.0
+requests==2.31.0
 tailwind==3.1.5b0
-wagtail==6.0.1
+wagtail==6.0.2

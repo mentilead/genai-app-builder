@@ -26,3 +26,11 @@ AWS_REGION='yourawsregion'
 # AllAuth Social
 ALLAUTH_GOOGLE_CLIENT_ID='yourgoogleclientid'
 ALLAUTH_GOOGLE_SECRET='yourgooglesecret'
+
+# Celery
+CELERY_BROKER_URL = 'yourbrokerurl'
+CELERY_RESULT_BACKEND = 'yourresultbackend'
+
+# LiteLLM
+LITE_LLM_API_KEY='yourlitellmmasterkey'
+LITE_LLL_BASE_URL='yourlitellmbaseurl'

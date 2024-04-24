@@ -5,7 +5,6 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import TextInput
 
-from core.models import UserProfile
 from .models import OrgProvider
 
 
@@ -23,8 +22,7 @@ class OpenAIAPIKeyForm(forms.ModelForm):
         name = self.cleaned_data.get('name')
         if not name:
             raise ValidationError('Name is required')
-        profile = UserProfile.objects.select_related('organization').get(user=self.user)
-        org_openai = OrgProvider.openai.filter(name=name, organization=profile.organization)
+        org_openai = OrgProvider.openai.filter(name=name, organization=self.user.organization)
 
         # We are allowed to update and keep same name
         if self.instance.pk:
@@ -72,8 +70,7 @@ class AWSBedrockForm(forms.ModelForm):
         name = self.cleaned_data.get('name')
         if not name:
             raise ValidationError('Name is required')
-        profile = UserProfile.objects.select_related('organization').get(user=self.user)
-        org_aws_bedrock = OrgProvider.aws_bedrock.filter(name=name, organization=profile.organization)
+        org_aws_bedrock = OrgProvider.aws_bedrock.filter(name=name, organization=self.user.organization)
 
         # We are allowed to update and keep same name
         if self.instance.pk:

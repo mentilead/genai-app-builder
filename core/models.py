@@ -1,18 +1,14 @@
 import uuid
+import logging
 
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+from django.utils.translation import gettext_lazy as _
 
+logger = logging.getLogger(__name__)
 
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        organization = Organization.objects.create(name=f"{instance.get_full_name()}'s Organization")
-        UserProfile.objects.create(user=instance,
-                                   organization=organization,
-                                   role='OWNER')
+from .managers import CustomUserManager
 
 
 class Organization(models.Model):
@@ -30,8 +26,34 @@ class Team(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+# https://testdriven.io/blog/django-custom-user-model/
+class CustomUser(AbstractUser):
+    username = None
+    email = models.EmailField(_("email address"), unique=True)
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
+
+    objects = CustomUserManager()
+
+    groups = models.ManyToManyField(
+        verbose_name='groups',
+        to='auth.Group',
+        blank=True,
+        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
+        related_name="customuser_set",
+        related_query_name="user",
+    )
+
+    user_permissions = models.ManyToManyField(
+        verbose_name='user permissions',
+        to='auth.Permission',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        related_name="customuser_set",
+        related_query_name="user",
+    )
+
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     teams = models.ManyToManyField(Team)
     USER_TYPE_CHOICES = (
@@ -40,4 +62,8 @@ class UserProfile(models.Model):
     )
 
     role = models.CharField(max_length=6, choices=USER_TYPE_CHOICES)
+    lite_llm_api_key = models.TextField(null=True, blank=True)
 
+
+    def __str__(self):
+        return self.email

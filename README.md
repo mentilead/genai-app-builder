@@ -24,6 +24,7 @@ ALTER DATABASE genaiappbuilder OWNER TO genaiappbuilder;
 Redis:
 redis-cli
 ACL SETUSER user >password on allchannels allkeys +get +set +del allcommands
+ACL SETUSER genaiappbuilder >Jg5X9gnGtzC5AMy on allchannels allkeys +get +set +del allcommands
 You also need to set a secret django key:
 
 `

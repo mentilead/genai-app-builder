@@ -3,10 +3,9 @@ import json
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
 from django.views import View
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.views.generic import FormView
 
-from .models import UserProfile
 from .forms import OrganizationForm
 
 
@@ -29,15 +28,13 @@ class OrganizationView(FormView, LoginRequiredMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user_profile = UserProfile.objects.get(user=self.request.user)
-        organization = user_profile.organization
+        organization = self.request.user.organization
         context['organization'] = organization
         context['form'] = self.form_class(instance=organization)  # Initialize form with organization instance
         return context
 
     def post(self, request, *args, **kwargs):
-        user_profile = UserProfile.objects.get(user=self.request.user)
-        organization = user_profile.organization
+        organization = self.request.user.organization
         form = self.form_class(data=request.POST,
                                instance=organization)  # Bind form with POST data and organization instance
         if form.is_valid():

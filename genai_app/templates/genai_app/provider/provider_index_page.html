@@ -3,6 +3,20 @@
 {% load widget_tweaks %}
 
 {% block extra_head %}
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('dialog', {
+                openModal: false,
+                show: function () {
+                    this.openModal = true;
+                },
+                hide: function () {
+                    this.openModal = false;
+                },
+            });
+        })
+    </script>
+
     <style>
         [x-cloak] {
             display: none !important;
@@ -192,20 +206,4 @@
         </script>
 
     </main>
-{% endblock %}
-{% block extra_body %}
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.store('dialog', {
-                openModal: false,
-                show: function () {
-                    this.openModal = true;
-                },
-                hide: function () {
-                    this.openModal = false;
-                },
-            });
-        })
-    </script>
-
 {% endblock %}

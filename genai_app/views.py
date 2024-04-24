@@ -5,7 +5,6 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.views.generic import ListView, CreateView, UpdateView
 from django.views.generic.edit import FormMixin, DeleteView
 
-from core.models import UserProfile
 from .forms import OpenAIAPIKeyForm, AWSBedrockForm
 from .models import OrgProvider
 
@@ -16,8 +15,8 @@ class OpenAIOrgAPIKeyListView(LoginRequiredMixin, ListView):
     context_object_name = 'openai_keys'
 
     def get_queryset(self):
-        user_profile_organization = self.request.user.userprofile.organization
-        return OrgProvider.openai.filter(organization=user_profile_organization)
+        user_organization = self.request.user.organization
+        return OrgProvider.openai.filter(organization=user_organization)
 
 
 openai_org_api_key_list_view = OpenAIOrgAPIKeyListView.as_view()
@@ -29,8 +28,8 @@ class AWSBedrockOrgIAMRoleARNKeyListView(LoginRequiredMixin, ListView):
     context_object_name = 'aws_iam_role_arns'
 
     def get_queryset(self):
-        user_profile_organization = self.request.user.userprofile.organization
-        return OrgProvider.aws_bedrock.filter(organization=user_profile_organization)
+        user_organization = self.request.user.organization
+        return OrgProvider.aws_bedrock.filter(organization=user_organization)
 
 
 aws_bedrock_org_iam_role_arn_list_view = AWSBedrockOrgIAMRoleARNKeyListView.as_view()
@@ -50,8 +49,7 @@ class OrgProviderBaseForm(LoginRequiredMixin, FormMixin):
 
         if pk is not None:
             try:
-                profile = UserProfile.objects.select_related('organization').get(user=self.request.user)
-                OrgProvider.objects.get(pk=pk, organization=profile.organization)
+                OrgProvider.objects.get(pk=pk, organization=self.request.use.organization)
             except OrgProvider.DoesNotExist:
                 return HttpResponseForbidden("You are not allowed to view this resource.")
 
@@ -93,14 +91,13 @@ class OrgProviderBaseForm(LoginRequiredMixin, FormMixin):
         else:
             raise ValueError(f"Invalid provider type: {self.provider_type}")
 
-        profile = UserProfile.objects.select_related('organization').get(user=self.request.user)
         # Ensure the user's organization matches what's being saved
-        if obj.id and obj.organization and obj.organization != profile.organization:
+        if obj.id and obj.organization and obj.organization != self.request.user.organization:
             raise ValueError('The selected organization does not correspond to the users organization')
 
         # Prevent an update if the organization already exists
         if not obj.id:
-            obj.organization = profile.organization
+            obj.organization = self.request.user.organization
 
         obj.save()
 
@@ -152,9 +149,8 @@ class OrgProviderRemove(LoginRequiredMixin, DeleteView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        profile = UserProfile.objects.select_related('organization').get(user=self.request.user)
 
-        return queryset.filter(organization=profile.organization)
+        return queryset.filter(organization=self.request.user.organization)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
