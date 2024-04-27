@@ -1,5 +1,5 @@
-from django.db import models
 from auditlog.registry import auditlog
+from django.db import models
 
 from core.models import Organization
 

@@ -6,4 +6,4 @@ class GenaiAppConfig(AppConfig):
     name = "genai_app"
 
     def ready(self):
-        import genai_app.signals  # to register signals
+        import genai_app.signals  # noqa: F401 to register signals

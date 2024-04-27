@@ -1,6 +1,8 @@
 from django.urls import path
-from .views import (openai_org_api_key_list_view, aws_bedrock_org_iam_role_arn_list_view,
-                    org_provider_create_view, org_provider_update_view, org_provider_delete_view)
+
+from .views import (aws_bedrock_org_iam_role_arn_list_view,
+                    openai_org_api_key_list_view, org_provider_create_view,
+                    org_provider_delete_view, org_provider_update_view)
 
 app_name = 'genai_app'  # add this line
 

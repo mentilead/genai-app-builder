@@ -12,7 +12,7 @@ class OpenAIAPIKeyForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         # pop the user from kwargs
         self.user = kwargs.pop('user', None)
-        super(OpenAIAPIKeyForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def clean_name(self):
         """
@@ -56,7 +56,7 @@ class AWSBedrockForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         # pop the user from kwargs
         self.user = kwargs.pop('user', None)
-        super(AWSBedrockForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         if not self.instance.pk:
             # Set the initial value of field1 to a new UUID

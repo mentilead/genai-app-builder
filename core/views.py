@@ -1,9 +1,7 @@
-import json
-
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import render
 from django.urls import reverse
 from django.views import View
-from django.shortcuts import render
 from django.views.generic import FormView
 
 from .forms import OrganizationForm
@@ -47,4 +45,3 @@ class OrganizationView(FormView, LoginRequiredMixin):
 
 
 organization_view = OrganizationView.as_view()
-

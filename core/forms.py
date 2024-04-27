@@ -1,9 +1,7 @@
 from django import forms
-from .models import Organization
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-
-from .models import CustomUser
+from .models import CustomUser, Organization
 
 
 class CustomUserCreationForm(UserCreationForm):

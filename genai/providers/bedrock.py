@@ -29,7 +29,7 @@ class BedrockClientManager:
                        streaming=True
                        )
 
-    def _get_bedrock_client_customer(runtime: Optional[bool] = True):
+    def _get_bedrock_client_customer(self, runtime: Optional[bool] = True):
         target_region = os.environ.get("AWS_REGION", os.environ.get("AWS_DEFAULT_REGION"))
         print(f"Create new client\n  Using region: {target_region}")
         session_kwargs = {"region_name": target_region}
@@ -72,9 +72,7 @@ class BedrockClientManager:
         print(bedrock_client._endpoint)
         return bedrock_client
 
-
-
-    def _get_bedrock_client(runtime: Optional[bool] = True):
+    def _get_bedrock_client(self, runtime: Optional[bool] = True):
         target_region = os.environ.get("AWS_REGION", os.environ.get("AWS_DEFAULT_REGION"))
 
         print(f"Create new client\n  Using region: {target_region}")
@@ -121,17 +119,15 @@ class BedrockClientManager:
         prompt = multi_var_prompt.format(**arg_dict)
         return prompt
 
-
-
     @staticmethod
     def create_claude_body(messages=[
         {"role": "user", "content": "Hello!"}
     ],
-                           token_count=150,
-                           temp=0,
-                           topP=1,
-                           topK=250,
-                           stop_sequence=["Human"]):
+            token_count=150,
+            temp=0,
+            topP=1,
+            topK=250,
+            stop_sequence=["Human"]):
         """
         Simple function for creating a body for Anthropic Claude models.
         """

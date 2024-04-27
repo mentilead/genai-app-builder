@@ -30,4 +30,5 @@ redis==5.0.3
 redisboard==0.0
 requests==2.31.0
 tailwind==3.1.5b0
+types-requests==2.31.0.20240406
 wagtail==6.0.2

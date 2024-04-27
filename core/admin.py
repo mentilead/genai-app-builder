@@ -1,10 +1,15 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Organization, Team, CustomUser
-from .forms import CustomUserCreationForm, CustomUserChangeForm
+
+from .forms import CustomUserChangeForm, CustomUserCreationForm
+from .models import CustomUser, Organization, Team
 
 
 class OrganizationAdmin(admin.ModelAdmin):
+    """
+    :class: OrganizationAdmin(admin.ModelAdmin) The OrganizationAdmin class is a subclass of admin.ModelAdmin that is
+    used for displaying and managing organizations in the admin interface.
+    """
     list_display = ['name', 'api_id']
 
 
@@ -31,7 +36,7 @@ class CustomUserAdmin(UserAdmin):
                 "email", "password1", "password2", "is_staff",
                 "is_active", "groups", "user_permissions"
             )}
-        ),
+         ),
     )
     search_fields = ("email",)
     ordering = ("email",)
@@ -40,4 +45,3 @@ class CustomUserAdmin(UserAdmin):
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(Team, TeamAdmin)
-

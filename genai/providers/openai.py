@@ -1,8 +1,3 @@
-import environ
-import os
-
-from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 
 
@@ -18,4 +13,3 @@ class OpenAIClientManager:
                                       model=model_id,
                                       temperature=self.TEMPERATURE,
                                       max_tokens=self.MAX_TOKENS)
-

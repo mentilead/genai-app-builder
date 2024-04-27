@@ -1,32 +1,29 @@
 import decimal
 import json
 import time
-from datetime import datetime, timezone
 
-from django.contrib.auth.mixins import LoginRequiredMixin
-
-from django.db import models
-from django.shortcuts import render, redirect
-from django.template.response import TemplateResponse
-from django.utils import timezone as django_timezone
-from modelcluster.fields import ParentalKey
-from wagtail.contrib.forms.forms import FormBuilder
-from wagtail.contrib.forms.models import AbstractFormField, AbstractFormSubmission, AbstractForm
-from wagtail.contrib.forms.panels import FormSubmissionsPanel
-
-from wagtail.models import Page
-from wagtail.fields import RichTextField, StreamField
-from wagtail.admin.panels import FieldPanel, InlinePanel
-from wagtail import blocks
-from wagtail.images.blocks import ImageChooserBlock
-from wagtail.contrib.forms.utils import get_field_clean_name
 import openai
-
-from genaiappbuilder import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import models
+from django.shortcuts import redirect, render
+from django.template.response import TemplateResponse
+from modelcluster.fields import ParentalKey
+from wagtail import blocks
+from wagtail.admin.panels import FieldPanel, InlinePanel
+from wagtail.contrib.forms.forms import FormBuilder
+from wagtail.contrib.forms.models import (AbstractForm, AbstractFormField,
+                                          AbstractFormSubmission)
+from wagtail.contrib.forms.panels import FormSubmissionsPanel
+from wagtail.contrib.forms.utils import get_field_clean_name
+from wagtail.fields import RichTextField, StreamField
+from wagtail.images.blocks import ImageChooserBlock
+from wagtail.models import Page
 
 from genai.providers.bedrock import BedrockClientManager
-from .genai import OrgProvider
+from genaiappbuilder import settings
+
 from .dynamodb import MentorSessionDDB, MentorSessionHistoryDDB
+from .genai import OrgProvider
 
 
 class MentorSession:
@@ -188,7 +185,7 @@ class DecimalEncoder(json.JSONEncoder):
                 return float(o)
             else:
                 return int(o)
-        return super(DecimalEncoder, self).default(o)
+        return super().default(o)
 
 
 class PromptPage(AbstractForm):
@@ -313,15 +310,14 @@ class PromptPage(AbstractForm):
                 "content": prompt
             }
         ],
-          extra_body={
-              "api_key": first_provider.val1})  # 👈 User Key
+                                                  extra_body={
+                                                      "api_key": first_provider.val1})  # 👈 User Key
 
         print(response)
 
+        #        client = BedrockClientManager("anthropic.claude-v2:1", model_kwargs=model_parameters)
 
-#        client = BedrockClientManager("anthropic.claude-v2:1", model_kwargs=model_parameters)
-
-#        response = client.textgen_llm.invoke(input=prompt)
+        #        response = client.textgen_llm.invoke(input=prompt)
         context["runnable_output"] = response.choices[0].message.content
 
         mentoring_data = {

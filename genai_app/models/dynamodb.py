@@ -1,8 +1,6 @@
 import time
 
 import boto3
-import os
-
 from boto3.dynamodb.conditions import Key
 
 from genaiappbuilder import settings
@@ -49,7 +47,6 @@ class MentorSessionDDB(BaseDynamoDBModel):
         history_date = int(time.time())
         self.insert_history(user_id, create_date, history_date, mentoring_data_json)
 
-
     @staticmethod
     def insert_history(user_id, create_date, history_date, mentoring_data_json):
         mentor_session_history_ddb = MentorSessionHistoryDDB()
@@ -72,7 +69,6 @@ class MentorSessionDDB(BaseDynamoDBModel):
             )
 
         return response
-
 
 
 class MentorSessionHistoryDDB(BaseDynamoDBModel):

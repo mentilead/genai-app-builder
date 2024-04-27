@@ -1,12 +1,11 @@
 import logging
 
 from django.db.models.signals import post_save
+from django.db.utils import IntegrityError
 from django.dispatch import receiver
 
-from django.db.utils import IntegrityError
+from core.models import CustomUser, Organization
 
-
-from core.models import Organization, CustomUser
 from .tasks import sync_lite_llm_user
 
 logger = logging.getLogger(__name__)
@@ -27,7 +26,7 @@ def create_user_profile(sender, instance, created, **kwargs):
             logger.error(f"Error creating organization for user {instance.id}")
             return
         except ValueError as e:
-            logger.error(f"An value error occurred when creating organization for user {instance.id}")
+            logger.error(f"An value error occurred when creating organization for user {instance.id}: {e}")
             return
 
         # Save as a separate operation, after user_profile has been successfully created

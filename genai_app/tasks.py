@@ -1,15 +1,10 @@
-import requests
 import logging
 
+import requests
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 
-from django.db.utils import IntegrityError
-
-
-from core.models import CustomUser, Organization
+from core.models import CustomUser
 from genaiappbuilder.celery import app
 
 logger = logging.getLogger(__name__)
@@ -85,4 +80,3 @@ def process_response(result):
     # This task will process the result of the make_api_call task
     # TODO: write your processing logic here
     print('Processing result:', result)
-

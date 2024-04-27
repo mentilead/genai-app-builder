@@ -1,14 +1,14 @@
-import uuid
 import logging
+import uuid
+from typing import List
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 
-logger = logging.getLogger(__name__)
-
 from .managers import CustomUserManager
+
+logger = logging.getLogger(__name__)
 
 
 class Organization(models.Model):
@@ -32,7 +32,7 @@ class CustomUser(AbstractUser):
     email = models.EmailField(_("email address"), unique=True)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS: List[str] = []
 
     objects = CustomUserManager()
 
@@ -63,7 +63,6 @@ class CustomUser(AbstractUser):
 
     role = models.CharField(max_length=6, choices=USER_TYPE_CHOICES)
     lite_llm_api_key = models.TextField(null=True, blank=True)
-
 
     def __str__(self):
         return self.email

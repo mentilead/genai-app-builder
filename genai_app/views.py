@@ -1,11 +1,12 @@
 import json
+from typing import Optional
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, HttpResponseForbidden
-from django.views.generic import ListView, CreateView, UpdateView
-from django.views.generic.edit import FormMixin, DeleteView
+from django.views.generic import CreateView, ListView, UpdateView
+from django.views.generic.edit import DeleteView, FormMixin
 
-from .forms import OpenAIAPIKeyForm, AWSBedrockForm
+from .forms import AWSBedrockForm, OpenAIAPIKeyForm
 from .models import OrgProvider
 
 
@@ -38,7 +39,7 @@ aws_bedrock_org_iam_role_arn_list_view = AWSBedrockOrgIAMRoleARNKeyListView.as_v
 class OrgProviderBaseForm(LoginRequiredMixin, FormMixin):
     model = OrgProvider
     template_name = 'genai_app/provider/provider_form.html'
-    provider_type: OrgProvider.Provider = None
+    provider_type: Optional[OrgProvider.Provider] = None
 
     def dispatch(self, request, *args, **kwargs):
         self.provider_type = request.GET.get('provider_type')

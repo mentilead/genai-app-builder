@@ -3,7 +3,6 @@ from pathlib import Path
 
 from django import template
 
-
 register = template.Library()
 
 input_css_path = Path(__file__).parent / ".." / "static" / "allauth_ui" / "input.css"
