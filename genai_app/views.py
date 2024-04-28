@@ -50,7 +50,7 @@ class OrgProviderBaseForm(LoginRequiredMixin, FormMixin):
 
         if pk is not None:
             try:
-                OrgProvider.objects.get(pk=pk, organization=self.request.use.organization)
+                OrgProvider.objects.get(pk=pk, organization=self.request.user.organization)
             except OrgProvider.DoesNotExist:
                 return HttpResponseForbidden("You are not allowed to view this resource.")
 

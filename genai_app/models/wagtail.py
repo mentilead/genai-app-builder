@@ -2,7 +2,6 @@ import decimal
 import json
 import time
 
-import openai
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
 from django.shortcuts import redirect, render
@@ -19,11 +18,10 @@ from wagtail.fields import RichTextField, StreamField
 from wagtail.images.blocks import ImageChooserBlock
 from wagtail.models import Page
 
-from genai.providers.bedrock import BedrockClientManager
+import genai.llm_client
 from genaiappbuilder import settings
 
 from .dynamodb import MentorSessionDDB, MentorSessionHistoryDDB
-from .genai import OrgProvider
 
 
 class MentorSession:
@@ -292,39 +290,21 @@ class PromptPage(AbstractForm):
                             "top_p": int(request.POST["top_p"]),
                             "stop_sequences": ["\n\nHuman"]
                             }
-        prompt = BedrockClientManager.create_prompt(self.prompts.raw_data[0]["value"][0]["value"]["prompt_text"],
-                                                    **form_submission.form_data)
 
-        user_profile_organization = self.request.user.userprofile.organization
-        first_provider = OrgProvider.openai.filter(organization=user_profile_organization).first()
+        org_provider_id = 1
+        llm_client = genai.llm_client.LLMClient(model="gpt-3.5-turbo", org_provider_id=org_provider_id,
+                                                lite_llm_api_key=self.request.user.lite_llm_api_key)
+        prompt = llm_client.create_prompt(self.prompts.raw_data[0]["value"][0]["value"]["prompt_text"],
+                                          **form_submission.form_data)
 
-        client = openai.OpenAI(
-            api_key="sk-6FhfLy0pTsU5Fv46i2WKvQ",
-            base_url="http://192.168.0.184:4000"
-        )
-
-        # request sent to model set on litellm proxy, `litellm --model`
-        response = client.chat.completions.create(model="gpt-3.5-turbo", messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-                                                  extra_body={
-                                                      "api_key": first_provider.val1})  # 👈 User Key
-
-        print(response)
-
-        #        client = BedrockClientManager("anthropic.claude-v2:1", model_kwargs=model_parameters)
-
-        #        response = client.textgen_llm.invoke(input=prompt)
-        context["runnable_output"] = response.choices[0].message.content
+        response = llm_client.complete(prompt)
+        context["runnable_output"] = response
 
         mentoring_data = {
             'page_id': self.id,
             'model_parameters': model_parameters,
             'form_data': form_submission.form_data,
-            'runnable_output': response.choices[0].message.content
+            'runnable_output': response
         }
         mentoring_data_json = json.dumps(mentoring_data, cls=DecimalEncoder)
 

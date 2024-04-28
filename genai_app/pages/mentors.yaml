@@ -1,0 +1,6 @@
+url: /dashboard/mentors
+type: genai_app.mentorindexpage
+
+# Your fields go here
+title: Mentors
+intro: Start a session by clicking a mentor

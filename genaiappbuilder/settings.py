@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "wagtail.search",
     "wagtail.admin",
     "wagtail",
+    "wagtailimporter",
     # django core apps
     "django.contrib.admin",
     "django.contrib.auth",

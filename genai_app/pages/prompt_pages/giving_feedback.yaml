@@ -1,0 +1,44 @@
+url: /dashboard/mentors/giving-feedback
+type: genai_app.promptpage
+
+# Your fields go here
+title: Giving Feedback
+intro: Get mentored on how to give constructive feedback
+body:
+    - type: heading
+      value: Thank you for the feedback tool
+    - type: paragraph
+      value: |
+            <p>          
+              What? This tool converts your feedback thoughts into a format following the following structure =>
+          
+              Information:
+              - Clearly describe the specific behavior or situation without judgment. Stick to factual observations.
+              - Provide concrete examples to illustrate the behavior. Be precise with details.
+              Importance:
+              - Explain why the behavior matters. Focus on its impact, relevance to goals, or connection to important values.
+              - Frame the importance constructively, not punitively. Avoid scolding or shaming.
+              
+              Invitation to Change:
+              - Invite dialogue and solicit the person's perspective. Ask open-ended questions.
+              - Suggest alternatives, but don't dictate. Say "You may want to try..." not "You should..."
+              - Offer support and express willingness to help implement changes.
+          
+              Implications:
+              - Discuss logical consequences, both positive and negative, of continuing current behavior.
+              - Frame implications in a motivational way focused on growth.
+              - Bring the conversation back to shared goals and values.
+          
+              The key is to give balanced, compassionate, thoughtful feedback that inspires improvement. Present information objectively, explain why it matters, invite participation in solutions, and share natural implications.
+          
+              If you want to dive deep into the science of receiving feedback then I highly recommend this book: "Thanks for the Feedback: The Science and Art of Receiving Feedback Well" https://www.amazon.com/Thanks-Feedback-Science-Receiving-Well/dp/0670014664
+            </p>
+
+prompts:
+    - type: prompt_list
+      value:
+        - prompt_id: feedback
+          prompt_text: |
+            Write feedback of {wordcount} words using the structure Information, Importance, Invitation to change, Implications, based on the following input. Provide both positive feedback for strengths as well as developmental feedback for areas of improvement.
+            <input>{input}</input>
+

@@ -1,0 +1,8 @@
+url: /dashboard/providers
+type: genai_app.providerindexpage
+
+# Your fields go here
+title: Register your providers
+intro: Register LLM providers that you want to have available during your mentor sessions
+openai_instructions: Your list of OpenAI API Key registrations
+aws_bedrock_instructions: Your list of Amazon IAM Role registrations

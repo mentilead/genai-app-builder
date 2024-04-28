@@ -1,0 +1,6 @@
+url: /dashboard
+type: genai_app.dashboard
+
+# Your fields go here
+title: Dashboard
+intro: List of previous mentor sessions

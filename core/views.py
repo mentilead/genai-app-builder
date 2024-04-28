@@ -18,6 +18,19 @@ ui_playground_view = UIPlaygroundView.as_view()
 
 
 class OrganizationView(FormView, LoginRequiredMixin):
+    """
+    View for managing organization details.
+    Inherits from FormView and LoginRequiredMixin.
+
+    Attributes:
+        template_name (str): Name of the template to render.
+        form_class (Form): Class of the form to be used.
+
+    Methods:
+        get_success_url: Returns the URL to redirect to after successful form submission.
+        get_context_data: Returns the context data to be passed to the template.
+        post: Handles POST requests and processes the form data.
+    """
     template_name = 'core/organization.html'
     form_class = OrganizationForm
 
