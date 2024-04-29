@@ -7,6 +7,7 @@ django-browser-reload==1.12.1
 django-compressor==4.4
 django-debug-toolbar==4.3.0
 django-environ==0.11.2
+django-extensions==3.2.3
 django-modelcluster==6.3
 django-redis==5.4.0
 django-redisboard==8.4.0
@@ -26,6 +27,7 @@ langchain-text-splitters==0.0.1
 langsmith==0.1.31
 litellm==1.35.18
 psycopg2-binary==2.9.9
+pynamodb==6.0.0
 redis==5.0.3
 redisboard==0.0
 requests==2.31.0

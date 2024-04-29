@@ -165,3 +165,21 @@ class OrgProviderRemove(LoginRequiredMixin, DeleteView):
 
 
 org_provider_delete_view = OrgProviderRemove.as_view()
+
+
+class MentorSessionHistoryView(LoginRequiredMixin, ListView):
+    template_name = 'genai_app/mentor_session_history.html'
+    context_object_name = 'history'
+
+    def __init__(self, **kwargs):
+        super().__init__(kwargs)
+        self.request = None
+
+    def get(self, request, *args, **kwargs):
+        self.request = request
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        # open_id = self.request.GET.get('openId', None)
+
+        return None

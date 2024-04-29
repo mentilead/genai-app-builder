@@ -1,5 +1,6 @@
 import decimal
 import json
+import logging
 import time
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -7,6 +8,7 @@ from django.db import models
 from django.shortcuts import redirect, render
 from django.template.response import TemplateResponse
 from modelcluster.fields import ParentalKey
+from pynamodb.exceptions import DoesNotExist
 from wagtail import blocks
 from wagtail.admin.panels import FieldPanel, InlinePanel
 from wagtail.contrib.forms.forms import FormBuilder
@@ -21,11 +23,13 @@ from wagtail.models import Page
 import genai.llm_client
 from genaiappbuilder import settings
 
-from .dynamodb import MentorSessionDDB, MentorSessionHistoryDDB
+from .dynamodb import MentorSession, MentorSessionHistory
+
+logger = logging.getLogger(__name__)
 
 
-class MentorSession:
-    def __init__(self, create_date, runnable_output, page_title, mentor_url):
+class MentorSessionDetail:
+    def __init__(self, create_date, runnable_output: str, page_title: str, mentor_url: str):
         self.create_date = create_date
         self.runnable_output = runnable_output
         self.page_title = page_title
@@ -44,6 +48,7 @@ class Dashboard(LoginRequiredMixin, Page):
 
         exclusive_start_key_create_date = request.GET.get("exclusive_start_key")
         if exclusive_start_key_create_date is not None and exclusive_start_key_create_date != "null":
+
             exclusive_start_key = {
                 "create_date": int(exclusive_start_key_create_date),
                 "user_id": request.user.id
@@ -52,30 +57,28 @@ class Dashboard(LoginRequiredMixin, Page):
         else:
             exclusive_start_key = None
 
-        mentor_session_ddb = MentorSessionDDB()
-        response = mentor_session_ddb.query_with_paging(request.user.id, 20, exclusive_start_key)
-
         mentor_session = []
-        for item in response["Items"]:
-            mentoring_data = json.loads(item["mentoring_data"])
+        results = MentorSession.query(hash_key=request.user.id,
+                                      last_evaluated_key=exclusive_start_key,
+                                      limit=20)
+        for item in results:
+
+            mentoring_data = json.loads(item.mentoring_data)
 
             mentor_url = ""
             page_title = ""
             if "page_id" in mentoring_data:
                 page = Page.objects.get(id=int(mentoring_data["page_id"]))
-                mentor_url = f"{page.url}?openId={int(item['create_date'])}"
+                mentor_url = f"{page.url}?openId={item.create_date}"
                 page_title = page.title
 
             mentor_session.append(
-                MentorSession(int(item["create_date"]), mentoring_data["runnable_output"], page_title, mentor_url))
+                MentorSessionDetail(item.create_date, mentoring_data["runnable_output"], page_title,
+                                    mentor_url))
 
         context['mentor_session'] = mentor_session
-        last_evaluated_key = response.get("LastEvaluatedKey")
-        if last_evaluated_key:
-            del response["LastEvaluatedKey"]["user_id"]
-            context['last_evaluated_key'] = last_evaluated_key["create_date"]
-
-        # add more data to context if needed
+        if results.last_evaluated_key:
+            context['last_evaluated_key'] = results.last_evaluated_key["create_date"]
 
         return context
 
@@ -234,22 +237,22 @@ class PromptPage(AbstractForm):
         if open_id:
             history_id = self.request.GET.get('historyId')
             if history_id:
-                mentor_session_history_ddb = MentorSessionHistoryDDB()
-                response = mentor_session_history_ddb.get_item(
-                    {
-                        'mentor_session_id': f"{self.request.user.id}-{open_id}",
-                        'history_date': int(history_id)
-                    }
-                )
+                mentor_session_id = f"{self.request.user.id}-{open_id}"
+                try:
+                    item = MentorSessionHistory.get(mentor_session_id, int(history_id))
+                    mentoring_data = json.loads(item.mentoring_data)
+                except DoesNotExist:
+                    logger.error(f"MentorSessionHistory with mentor_session_id {mentor_session_id}"
+                                 f" and history_id {history_id} does not exist")
+                    raise DoesNotExist
             else:
-                mentor_session_ddb = MentorSessionDDB()
-                response = mentor_session_ddb.get_item(
-                    {
-                        'user_id': self.request.user.id,
-                        'create_date': int(open_id)
-                    }
-                )
-            mentoring_data = json.loads(response["mentoring_data"])
+                try:
+                    item = MentorSession.get(self.request.user.id, int(open_id))
+                    mentoring_data = json.loads(item.mentoring_data)
+                except DoesNotExist:
+                    logger.error(f"MentorSession with user_id {self.request.user.id}"
+                                 f" and create_date {open_id} does not exist")
+                    raise DoesNotExist
 
             self.runnable_output = mentoring_data["runnable_output"]
             form.initial = mentoring_data["form_data"]
@@ -308,8 +311,6 @@ class PromptPage(AbstractForm):
         }
         mentoring_data_json = json.dumps(mentoring_data, cls=DecimalEncoder)
 
-        mentor_session_ddb = MentorSessionDDB()
-
         # Get user_id from request
         user_id = request.user.id
 
@@ -317,11 +318,35 @@ class PromptPage(AbstractForm):
         session_create_date_string = request.GET.get('openId')
         if session_create_date_string is not None and session_create_date_string != "":
             create_date = int(session_create_date_string)
-            mentor_session_ddb.update(user_id, create_date, mentoring_data_json)
+            try:
+                mentor_session_item = MentorSession.get(user_id, create_date)
+                mentor_session_item.update(
+                    actions=[
+                        MentorSession.mentoring_data.set(mentoring_data_json),
+                    ]
+                )
+                mentor_session_id = f"{user_id}-{create_date}"
+                mentor_session_history_item = MentorSessionHistory(mentor_session_id=mentor_session_id,
+                                                                   history_date=int(time.time()),
+                                                                   mentoring_data=mentoring_data_json)
+
+                mentor_session_history_item.save()
+
+            except DoesNotExist:
+                logging.error("MentorSession with user_id '{user_id}' and create_date '{create_date}' does not exist")
         else:
             # Get current UTC time in seconds since 1970
             create_date = int(time.time())
-            mentor_session_ddb.insert(user_id, create_date, mentoring_data_json)
+            mentor_session_item = MentorSession(user_id=user_id,
+                                                create_date=create_date,
+                                                mentoring_data=mentoring_data_json)
+            mentor_session_item.save()
+            mentor_session_id = f"{user_id}-{create_date}"
+            mentor_session_history_item = MentorSessionHistory(mentor_session_id=mentor_session_id,
+                                                               history_date=create_date,
+                                                               mentoring_data=mentoring_data_json)
+
+            mentor_session_history_item.save()
 
         context["history"] = self.get_mentor_session_history(user_id, create_date)
         context["open_id"] = create_date
@@ -333,14 +358,13 @@ class PromptPage(AbstractForm):
     def get_mentor_session_history(self, user_id, create_date):
         # Get latest history
         mentor_session_id = f"{user_id}-{create_date}"
-        mentor_session_history_ddb = MentorSessionHistoryDDB()
-        history_ddb = mentor_session_history_ddb.query_with_paging(mentor_session_id, 10, None)
+        items = MentorSessionHistory.query(mentor_session_id, page_size=10, scan_index_forward=False)
         history = []
-        for item in history_ddb["Items"]:
-            history_mentoring_data = json.loads(item["mentoring_data"])
-            history.append({"create_date": create_date, "history_date": item["history_date"],
+        for item in items:
+            history_mentoring_data = json.loads(item.mentoring_data)
+            history.append({"create_date": create_date, "history_date": item.history_date,
                             "runnable_output": history_mentoring_data["runnable_output"],
-                            "mentor_url": f"{self.url}?openId={create_date}&historyId={item['history_date']}"})
+                            "mentor_url": f"{self.url}?openId={create_date}&historyId={item.history_date}"})
         return history
 
 

@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.urls import reverse
@@ -5,6 +7,8 @@ from django.views import View
 from django.views.generic import FormView
 
 from .forms import OrganizationForm
+
+logger = logging.getLogger(__name__)
 
 
 class UIPlaygroundView(View):

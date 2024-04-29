@@ -24,5 +24,12 @@
       <jdbc-url>jdbc:postgresql://192.168.0.184:5432/postgres</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="LocalhostDynamo" uuid="08633323-93da-4df9-a61c-d32d520aace3">
+      <driver-ref>dynamo</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.jetbrains.DynamoDriver</jdbc-driver>
+      <jdbc-url>jdbc:dynamodb://192.168.0.184:8000?region=eu-west-1</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>
